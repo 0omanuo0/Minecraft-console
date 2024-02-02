@@ -3,9 +3,15 @@
     <p class=" text-neutral-100 font-extralight">UUID: {{server.status_server.pid}}</p>
     <div class=" flex">
         <div class="relative hidden lg:flex ml-auto -mt-14">
+            {% if server.is_server_on %}
             <form method="post" action="{{ '/server/' + id + '/stop'  }}">
                 <button type="submit" class=" bg-red-400 hover:bg-red-500 duration-300 transition-colors px-12 rounded-xl h-fit py-3 text-red-50 shadow-lg text-xl tracking-widest">Stop</button>
             </form>
+            {% else %}
+            <form method="post" action="{{ '/server/' + id + '/start'  }}">
+                <button type="submit" class=" bg-[#6cabad] hover:bg-[#0E8388] duration-300 transition-colors px-12 rounded-xl h-fit py-3 text-red-50 shadow-lg text-xl tracking-widest">Start</button>
+            </form>
+            {% endif %}
         </div>
     </div>
 

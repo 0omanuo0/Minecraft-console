@@ -13,16 +13,17 @@
     </div>
     <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#0E8388] text-white" onclick="location.href = '/'">
         <i class="bi bi-house-door-fill"></i>
-        <span class="text-[15px] ml-4 text-gray-200 font-bold">Home</span>
+        <span class="text-[15px] ml-4 text-gray-200 font-bold text-lg">Home</span>
     </div>
-    <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#0E8388] text-white">
+    <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#0E8388] text-white" onclick="toggle_list_visibility()">
         <i class="bi bi-hdd-network"></i>
-        <span class="text-[15px] ml-4 text-gray-200 font-bold">Servers</span>
+        <span class="text-[15px] ml-4 text-gray-200 font-bold text-lg">Servers</span>
     </div>
-    <div class=" text-left mx-10">
-        <ul class=" space-y-2">
+    <div id="servers_list" class=" hidden text-left mx-4 mt-4">
+        <ul class=" space-y-2 font-litght" >
+            <li class="hover:border-l-2 pl-6 text-white hover:opacity-80 transition-opacity duration-300"><a href="/create"><i class="bi bi-cloud-plus mr-2"></i>Create server</a></li>
             {% for key, server in servers.items() %}
-            <li class=" text-white hover:opacity-80 transition-opacity duration-300"><a href="{{'/server/' + key}}">{{server.name}} {% if server.is_server_on %}
+            <li class=" hover:border-l-2 pl-6 text-white hover:opacity-80 transition-opacity duration-300"><a href="{{'/server/' + key}}">{{server.name}} {% if server.is_server_on %}
                     <span class=" text-green-600">[ Online ]</span>
                     {% else %}
                     <span class=" text-red-900">[ Offline ]</span>
@@ -37,3 +38,16 @@
         <span class="text-[15px] ml-4 text-gray-200 font-bold">Logout</span>
     </div>
 </div>
+
+<script>
+    function toggle_list_visibility(){
+        var list = document.getElementById("servers_list");
+        if(list.classList.contains("hidden")){
+            list.classList.remove("hidden");
+        }
+        else{
+            list.classList.add("hidden")
+        }
+    }
+    
+</script>

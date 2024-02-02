@@ -1,13 +1,12 @@
 from flask import Flask, render_template, request, redirect, send_file
 import shutil
-import psutil
-import socket
-import platform
 from pathlib import Path
 from flask_socketio import SocketIO, emit
 import os
-from server import McServer, generate_tree
+from python.server import McServer
+from python.tools import get_host_status, generate_tree
 import json
+import subprocess
 
 #####https://mctools.readthedocs.io/en/master/rcon.html
 
@@ -20,10 +19,16 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, async_mode=async_mode)
 
-minecraft_server = McServer(name="server1", host='10.1.1.101')
-minecraft_server2 = McServer(name="server2", host='10.1.1.102')
+servers_path = "/home/manu/mc_servers/"
+
+minecraft_server = McServer(name="server1", host='10.1.1.101', path=servers_path+"truquito")
+minecraft_server2 = McServer(name="server2", host='10.1.1.102', path=servers_path+"truquito")
 
 servers : dict[str, McServer] = {"1":minecraft_server, "2":minecraft_server2}
+
+servers_process : dict[str, subprocess.Popen] = {}
+
+
 
 @app.route('/server/<id>/stop', methods=['POST'])
 def stop(id):
@@ -33,29 +38,50 @@ def stop(id):
     server.send_rcon_command("stop")
     return redirect('/server/' + id)
 
+@app.route('/server/<id>/start', methods=['POST'])
+def start(id):
+    if not id in servers:
+        return "Server not found"
+    server : McServer = servers[id]
+    #open subprocess running java -jar server.jar nogui in server.PATH and redirect stdout to log_server variable
+    server_proc = subprocess.Popen(["java", "-jar", "server.jar", "nogui"], cwd=server.PATH, stdout=None)
+    servers_process[id] = server_proc
+    return redirect('/server/' + id)
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     for id, server in servers.items():
         server.check_alive()
-    cpu_percent = psutil.cpu_percent()
-    cpu_count = psutil.cpu_count()
-    ram = psutil.virtual_memory()
-    hostname = socket.gethostname()
-    SO = platform.uname().system + " " +  " " + platform.uname().release
-    cpu_type = platform.uname().processor
-    server_data = {"cpu":cpu_percent, "cpu_count":cpu_count, "ram":ram, "hostname":hostname, "SO":SO, "cpu_type":cpu_type}
-        
-    return render_template('index.html', servers=servers, data=server_data)
+    return render_template('index.html', servers=servers, data=get_host_status())
 
 @app.route('/server/<id>', methods=['GET', 'POST'])
 def server(id):
     if not id in servers:
-        return "Server not found"
+        return "Server not found" 
     server : McServer = servers[id]
     server.check_alive()
-
-    print("is_on(ping):", server.is_server_on)
     return render_template('console.html',server=server, servers=servers, id=id)
+
+@app.route('/create', methods=['GET', 'POST'])
+def create():
+    if request.method == 'POST':
+        name = request.form['name']
+        host = request.form['host']
+        path = request.form['path']
+        if not os.path.exists(path):
+            os.makedirs(path)
+            #copy data/default_server content into new dir
+        server = McServer(name=name, host=host, path=path)
+        servers[str(len(servers)+1)] = server
+        return redirect('/server/' + str(len(servers)))
+    elif request.method == 'GET':
+        with open("data/server_properties_create.json", "r") as file:
+            server_config : dict = json.load(file)
+
+        return render_template('create.html', config=server_config, servers=servers)
+
+
 
 @app.route('/server/<id>/files', methods=['GET', 'POST'])
 def files(id):
@@ -110,6 +136,8 @@ def download(id):
     return send_file(file, as_attachment=True)
 
 
+
+
 @app.route('/server/<id>/config', methods=['GET', 'POST'])
 def config(id):
     servers[id].check_alive()
@@ -126,20 +154,22 @@ def config(id):
     for key, value in a.items():
         if key in server_config:
             b[key] = value
-    print("is_on(ping):", server.is_server_on)
     return render_template('config.html',server=server, servers=servers, id=id, config=b)
+
+
+
 
 @socketio.on('send_command')  # Define a WebSocket event called 'send_command'
 def handle_send_command(data):
-    print(request.path)
     content = data["command"]
     serverid = data["serverid"].split("/")[-1]
     server = servers[serverid]
-    print(content)
     if server.is_server_on:
         content = server.send_rcon_command(content).replace("[0m", "")
         if content != '':
             emit('recv', server.send_content(other_content=content))
+
+
 
 
 @socketio.event
