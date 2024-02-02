@@ -1,0 +1,56 @@
+{% extends "layouts/base_server.html" %}
+
+{% block title %} Home {% endblock %}
+
+{% block content %}
+
+
+<section>
+    <form method="post" action="" class=" bg-neutral-100 rounded-lg px-20 py-10 space-y-4">
+        <div class="flex border-b-2 pb-4">
+            <h1 class="text-2xl">Configuration</h1>
+            <nav id="base" class="relative hidden lg:flex items-center ml-auto pr-20" style="font-family: Montserrat;">
+                <button type="submit"
+                    class=" bg-[#6cabad] hover:bg-[#0E8388] duration-300 transition-colors px-6 rounded-xl h-fit pt-1 pb-2 text-red-50 shadow-lg tracking-wide">Apply</button>
+            </nav>
+        </div>
+
+        <ul class=" list-none grid grid-cols-2 grid-flow-row gap-3 items-center">
+            {% for key, value in config.items() %}
+            <li> {{ key }}:
+                {% if value is boolean %}
+                <input type="checkbox" name="{{key}}" id="{{key}}" {% if value %} checked="checked" {% endif %}
+                    class=" ml-2 items-end">
+                {% elif value is integer %}
+                <input type="number" name="{{key}}" id="{{key}}" value="{{ value }}"
+                    class="border rounded bg-neutral-100 border-neutral-900 px-2 p-1 ml-2 items-end">
+                {% elif value is string %}
+                <input type="text" name="{{key}}" id="{{key}}" value="{{ value }}"
+                    class="bg-neutral-100 border border-neutral-900 rounded px-2 p-1 ml-2 items-end">
+                {% else %}
+                <input type="text" name="{{key}}" id="{{key}}" value="{{ value|first }}"
+                    class="bg-neutral-100 border border-neutral-900 rounded px-2 p-1 ml-2 items-end">
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </form>
+</section>
+
+
+<script>
+    $(document).on('submit', 'form', function () {
+        $(this).find('input[type=checkbox]').each(function () {
+            var checkbox = $(this);
+
+            // add a hidden field with the same name before the checkbox with value = 0
+            if (!checkbox.prop('checked')) {
+                checkbox.clone()
+                    .prop('type', 'hidden')
+                    .val("off")
+                    .insertBefore(checkbox);
+            }
+        });
+    });
+</script>
+{% endblock content %}

@@ -1,0 +1,23 @@
+<ul class="hidden" id="{{files.rute}}">
+    {% for d in files.dir %}
+    <li class="">
+        {% set dir_rute = files.rute + '/' + d.name %}
+        <button onclick='display("{{d.rute}}")' oncontextmenu='contextmenu(event, "{{dir_rute}}")'
+            class="hover:bg-gray-200 rounded-lg px-4 py-2">
+            {{ d.name }}
+        </button>
+        {% with files=d %}
+        {% include "dir.html" %}
+        {% endwith %}
+    </li>
+    {% endfor %}
+
+    {% for file in files.files %}
+    <li class="">
+        {% set file_rute = files.rute + '/' + file %}
+        <button oncontextmenu='contextmenu(event, "{{file_rute}}")' class="hover:bg-gray-200 rounded-lg px-4 py-2">
+            {{ file }}
+        </button>
+    </li>
+    {% endfor %}
+</ul>

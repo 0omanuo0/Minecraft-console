@@ -1,0 +1,40 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Home {% endblock %}
+
+{% block content %}
+
+
+<section class=" bg-neutral-100 rounded-lg px-20 py-10 space-y-4">
+
+    <div class="flex border-b-2 pb-4">
+        <h1 class="text-2xl">Dashboard</h1>
+    </div>
+    <ul class="grid grid-cols-3 grid-flow-row gap-1">
+        <li>Host: <span>{{data.hostname}}</li>
+        <li>SO: <span>{{data.SO}}</li>
+        <li>CPU cores: <span>{{data.cpu_count | string + "(" + data.cpu_type + ")" }}</li>
+        <li>CPU usage: <span>{{data.cpu}}%</li>
+        <li>RAM usage: <span>{{data.ram.percent}}%</li>
+        <li>RAM available: <span>{{(data.ram.available/1024**3) | round(2)}}GB</li>
+    </ul>
+</section>
+<section class=" bg-neutral-100 rounded-lg px-20 py-10 space-y-4">
+    <div class=" border-b-2">
+        <h1>Servers</h1>
+    </div>
+    <ul>
+        {% for key, server in servers.items() %}
+        <li class=" text-neutral-800"><a
+                href="{{'/server/' + key}}">{{server.name}} {% if server.is_server_on %}
+                <span class=" text-green-600">[ Online ]</span>
+                {% else %}
+                <span class=" text-red-900">[ Offline ]</span>
+                {% endif %}</a></li>
+        {% endfor %}
+    </ul>
+</section>
+
+
+
+{% endblock content %}

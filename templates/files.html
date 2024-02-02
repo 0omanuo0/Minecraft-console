@@ -1,0 +1,53 @@
+{% extends "layouts/base_server.html" %}
+
+{% block title %} Home {% endblock %}
+
+{% block content %}
+
+
+<section class=" bg-neutral-100 rounded-lg px-20 py-10 space-y-4">
+    <div class="flex border-b-2 pb-4">
+        <h1 class="text-2xl">File explorer</h1>
+    </div>
+
+    <ul class=" list-none grid grid-cols-2 grid-flow-row gap-1 items-center">
+        <!-- oncontextmenu='contextmenu(event, "{{files.rute}}")' -->
+        {% for d in files.dir %}
+        <li class="">
+            {% set dir_rute = files.rute + '/' + d.name %}
+            <button onclick='display("{{d.rute}}")' oncontextmenu='contextmenu(event, "{{dir_rute}}")'
+                class="hover:bg-gray-200 rounded-lg px-4 py-2">
+                {{ d.name }}
+            </button>
+            {% with files=d %}
+            {% include "dir.html" %}
+            {% endwith %}
+        </li>
+        {% endfor %}
+
+        {% for file in files.files %}
+        <li class="">
+            {% set file_rute = files.rute + '/' + file %}
+            <button oncontextmenu='contextmenu(event, "{{file_rute}}")' class="hover:bg-gray-200 rounded-lg px-4 py-2">
+                {{ file }}
+            </button>
+        </li>
+        {% endfor %}
+
+    </ul>
+    <div id="menu" class="hidden absolute bg-white rounded-lg shadow-lg py-2">
+        <ul id="list_menu" class=" space-y-2">
+            <li class=" px-4 py-1 hover:bg-slate-100 hover:text-neutral-600" onclick="accionMenu('Delete')">Delete</li>
+            <li class=" px-4 py-1 hover:bg-slate-100 hover:text-neutral-600" onclick="accionMenu('Rename')">Rename</li>
+            <li class=" px-4 py-1 hover:bg-slate-100 hover:text-neutral-600" onclick="accionMenu('File')">Create file
+            </li>
+            <li class=" px-4 py-1 hover:bg-slate-100 hover:text-neutral-600" onclick="accionMenu('Folder')">Create
+                folder</li>
+            <li class=" px-4 py-1 hover:bg-slate-100 hover:text-neutral-600" onclick="accionMenu('Upload')">Upload</li>
+            <li class=" px-4 py-1 hover:bg-slate-100 hover:text-neutral-600" onclick="accionMenu('Download')">Download</li>
+        </ul>
+    </div>
+</section>
+
+<script src="{{ url_for('static', filename='js/files.js')}}"></script>
+{% endblock content %}

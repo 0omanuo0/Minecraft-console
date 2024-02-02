@@ -1,0 +1,51 @@
+<section class=" border-b-2 pb-6">
+    <h1 class="text-2xl text-white">Server details - {{server.name}}</h1>
+    <p class=" text-neutral-100 font-extralight">UUID: {{server.status_server.pid}}</p>
+    <div class=" flex">
+        <div class="relative hidden lg:flex ml-auto -mt-14">
+            <form method="post" action="{{ '/server/' + id + '/stop'  }}">
+                <button type="submit" class=" bg-red-400 hover:bg-red-500 duration-300 transition-colors px-12 rounded-xl h-fit py-3 text-red-50 shadow-lg text-xl tracking-widest">Stop</button>
+            </form>
+        </div>
+    </div>
+
+</section>
+<section class="bg-white px-32 py-4 rounded-lg">
+    <ul class="grid grid-cols-3 grid-flow-row gap-1">
+        <li>Server name: <span>{{server.name}}</span>
+            {% if server.is_server_on %}
+            <a class=" text-green-600">[ Online ]</a>
+            {% else %}
+            <a class=" text-red-900">[ Offline ]</a>
+            {% endif %}
+        </li>
+        <li>Host: <span>{{server.host}}</li>
+        <li>PID: <span>{{server.status_server.pid}}</li>
+        <li>CPU usage: <span>{{server.status_server.cpu}}</li>
+        <li>RAM usage: <span>{{server.status_server.ram|round(2)}}</li>
+        <li>cmd: <span>{{server.status_server.cmd | join(" ")}}</li>
+    </ul>
+    <ul class=" flex mt-6">
+        <li id="Console" class="flex-1 text-center rounded-full px-1 py-1"><a href="{{ '/server/' + id }}">Console</a></li>
+        <li id="Files" class="flex-1 text-center rounded-full px-1 py-1"><a href="{{ '/server/' + id + '/files' }}">Files</a></li>
+        <li id="Config" class="flex-1 text-center rounded-full px-1 py-1"><a href="{{ '/server/' + id + '/config' }}">Config</a></li>
+        <li id="Stats" class="flex-1 text-center rounded-full px-1 py-1">Stats</li>
+        <li id="Backups" class="flex-1 text-center rounded-full px-1 py-1">Backups</li>
+        <li id="Schedule" class="flex-1 text-center rounded-full px-1 py-1">Schedule</li>
+    </ul>
+    <span class="bg-gray-200 hidden">Dummy</span>
+    <script>
+        $(document).ready(function () {
+            var url = window.location.pathname.split('/').pop();
+            currentElement = document.getElementById(url.charAt(0).toUpperCase()+ url.slice(1));
+            if(currentElement){}
+            else if (url == "edit"){
+                return
+            }
+            else{
+                currentElement = document.getElementById("Console")
+            }
+            currentElement.classList.add("bg-gray-200") 
+        });
+    </script>
+</section>

@@ -1,0 +1,14 @@
+{
+  "name": "flask_mc_console",
+  "scripts": {
+    "watch-css": "npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.2.6"
+  },
+  "version": "1.0.0",
+  "main": "postcss.config.js",
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
