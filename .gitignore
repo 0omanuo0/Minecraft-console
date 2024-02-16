@@ -1,4 +1,4 @@
-.vscode
+*/.vscode
 
 data/default_server/
 __pycache__/
