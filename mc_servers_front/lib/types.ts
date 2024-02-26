@@ -5,6 +5,20 @@ export enum States {
     Idle = "idle",
 }
 
+export const EditableFiles = [
+    "log",
+    "txt",
+    "properties",
+    "json",
+];
+
+export interface Files{
+    dir:Files[],
+    files:string[],
+    rute:string,
+    name:string,
+}
+
 interface Section{
     name:string,
     Path:string

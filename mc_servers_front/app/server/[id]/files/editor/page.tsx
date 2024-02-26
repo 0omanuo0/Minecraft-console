@@ -1,35 +1,25 @@
-
 import MCEditor from "@/components/server/editor"
-import Save from "@/static/img/save.svg"
-// import { useState } from "react"
-import Image from "next/image";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react"
+import { Suspense, use, useEffect } from "react"
+import { unstable_noStore as noStore } from 'next/cache';
 
 import { getFileEdit } from "@/lib/get_server_data"
 
-export default async function Servers({ params }: { params: { id: string } }) {
+function getFileType(path: string) {
+    const split = path.split(".");
+    return split[split.length - 1];
+}
 
-    // const searchParams = useSearchParams()
-    // const file = searchParams.get("file")
+export default async function Servers({ params, searchParams }: 
+    { params: { id: string }; searchParams : { path: string }}
+    ) {
 
-    // const [showSave, setShowSave] = useState(false);
-
-    // const click = (e: string | undefined) => {
-    //     if (e != oldContent) setShowSave(true);
-    //     else setShowSave(false);
-    // }
-
-
-
-    // let oldContent = content;
-
-    const content = await getFileEdit(params.id, "/home/manu/mc_servers/truquito/logs/latest.log");
-
+    noStore();
+    const content = await getFileEdit(params.id, searchParams.path);
+    const fileType = getFileType(searchParams.path);
 
     return (
         
-        <section className="space-y-4 rounded-xl">
+        <section className="space-y-4 rounded-xl pb-10">
             <div className=" items-center flex">
                 <h1 className="text-xl text-white">Editing file: <span className=" text-lg font-extralight">{""}</span></h1>
                 <div className="h-fit relative lg:flex ml-auto items-center">
@@ -41,10 +31,10 @@ export default async function Servers({ params }: { params: { id: string } }) {
                     >save</button>
                 </div>
             </div>
-            <div className=" bg-white shadow-inner px-6 py-6 rounded-lg">
+            <div className=" bg-white shadow-inner px-6 py-6 rounded-lg ">
                 <div className=" bg-[#f5f2f0] shadow-inner px-6 py-10 rounded-lg h-fit">
-                    <Suspense>
-                        <MCEditor content={content} /*onChange={click}*/ ></MCEditor>
+                    <Suspense fallback={<p className=" text-black text-2xl">Loading...</p>}>
+                        <MCEditor content={content} fileType={fileType} ></MCEditor>
                     </Suspense>
                 </div>
             </div>

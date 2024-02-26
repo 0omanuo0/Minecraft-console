@@ -116,8 +116,8 @@ class McServer ():
         f = open('{}/logs/latest.log'.format(self.PATH))
         self.content = f.read()
         if self.content != '':
-            if not self.is_server_on:
-                return {'data': ""}
+            # if not self.is_server_on:
+            #     return {'data': ""}
             #return list whith only last three elements
             self.content = self.content.split('\n')[(-1*self.LIMIT_LINES):]
             if other_content != '':

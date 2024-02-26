@@ -3,7 +3,6 @@ import { getServer } from "@/lib/get_server_data"
 
 export default async function Servers({ params }: { params: { id: string } }) {
     const server = await getServer(params.id);
-    console.log(server);
     if (!server) return <></>;
     return (
         <section>
@@ -19,5 +18,4 @@ export default async function Servers({ params }: { params: { id: string } }) {
             </form>
         </section>
     )
-
 }

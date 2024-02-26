@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 
 import Sidebar from "@/components/sidebar";
 import HeadServer from "@/components/server/head";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getServers } from "@/lib/get_server_data"
 
 
@@ -20,9 +20,10 @@ export default async function DashboardLayout({
     children: React.ReactNode; params: { id: string }
 }>) {
     const serversList = await getServers();
-    if(!serversList) notFound();
+    // redirect dashboard if !serversList
+    if(!serversList) redirect("/dashboard");
     const mc_Server = serversList.find(server => server.id === params.id);
-    if (!mc_Server) notFound();
+    if(!mc_Server) redirect("/dashboard");
     return (
         <html lang="en">
             <head>

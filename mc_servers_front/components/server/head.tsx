@@ -66,8 +66,8 @@ export default function HeadServer({ server, }: Readonly<{ server: McServer; }>)
                 </div>
 
             </section>
-            <section className="bg-white px-32 py-4 rounded-lg text-neutral-600">
-                <ul className="grid grid-cols-3 grid-flow-row gap-1">
+            <section className="bg-white px-10 lg:px-32 gap-2 py-4 rounded-lg text-neutral-600">
+                <ul className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 grid-flow-row gap-2">
                     <li key={"name"}>Server: <span>{server.name} <StateSidebar state={server.status}></StateSidebar> </span></li>
                     <li key={"host"}>Host: <span>{server.host} </span></li>
                     <li key={"PID"}>PID: <span>{server.process_status.PID} </span></li>

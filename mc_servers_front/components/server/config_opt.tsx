@@ -53,7 +53,7 @@ export default function ConfigOpts({default_values,}:Readonly<{default_values:Co
 
     
     return (
-        <ul key={"optList"} className=" text-neutral-600 list-none grid grid-cols-2 grid-flow-row gap-3 items-center">
+        <ul key={"optList"} className=" text-neutral-600 list-none grid grid-cols-1 lg:grid-cols-2 grid-flow-row gap-3 items-center">
             {config}
         </ul>
     )

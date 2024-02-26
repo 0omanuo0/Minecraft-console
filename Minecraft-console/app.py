@@ -18,7 +18,7 @@ async_mode = None
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app, async_mode=async_mode)
+socketio = SocketIO(app, async_mode=async_mode, cors_allowed_origins="http://localhost:3000")
 
 servers_path = "/home/manu/mc_servers/"
 
@@ -177,12 +177,18 @@ def config(id):
     return jsonify(b)
 
 
+# @app.route('/server/<id>/command', methods=['POST'])
+# def command(id):
+#     content = request.form['command']
+#     server : McServer = servers[id]
+#     server.check_alive()
+#     print("Command: " + content)
 
 
 @socketio.on('send_command')  # Define a WebSocket event called 'send_command'
 def handle_send_command(data):
-    content = data["command"]
-    serverid = data["serverid"].split("/")[-1]
+    content : str = data["command"]
+    serverid : str = data["serverid"]
     server = servers[serverid]
     if server.is_server_on:
         content = server.send_rcon_command(content).replace("[0m", "")
@@ -195,9 +201,11 @@ def handle_send_command(data):
 @socketio.event
 def update(data:dict[str,str]):
     serverid = data["serverid"].split("/")[-1]
-    if serverid  in servers:
+    if serverid in servers:
         content = servers[serverid].send_content()
         emit('recv', content)
+    else:
+        emit('recv', {"status":"NotFound"})
 
 
 

@@ -1,11 +1,11 @@
-import { McServer, McServerList } from "@/lib/types"
+import { McServer, McServerList, Files } from "@/lib/types"
 import { unstable_noStore as noStore } from 'next/cache';
 
-const api_ip = process.env.SERVER_API_IP;
+export const api_ip = process.env.SERVER_API_IP;
 
 export async function getServers() {
+    noStore();
     try {
-        noStore();
         const res = await fetch(`${api_ip}/servers`);
         
         if (!res.ok) {
@@ -22,9 +22,10 @@ export async function getServers() {
     }
 }
 
+
 export async function getServer(id:string) {
+    noStore();
     try {
-        noStore();
         const res = await fetch(api_ip + `/server/` + id);
         if (!res.ok) {
             return undefined;
@@ -41,9 +42,9 @@ export async function getServer(id:string) {
 }
 
 export async function getFileEdit(id:string, path:string) {
+    noStore();
     try {
         const api_ip = process.env.SERVER_API_IP;
-        noStore();
         const url = api_ip + `/server/` + id + "/edit?path=" + path;
         const res = await fetch(url);
         console.log("Api ip: " + api_ip)
@@ -57,6 +58,23 @@ export async function getFileEdit(id:string, path:string) {
         
         return server;
         
+    } catch (error) {
+        console.error('Error al obtener los servidores:', error);
+        throw error; // Puedes manejar el error según tus necesidades
+    }
+}
+
+export async function getServerFiles(id:string, path?:string) {
+    noStore();
+    try {
+        const api_ip = process.env.SERVER_API_IP;
+        const url = `${api_ip}/server/${id}/files`;
+        
+        const res = await fetch(url);
+        if (!res.ok) return undefined;
+        
+        const data : Files = await res.json();
+        return data;
     } catch (error) {
         console.error('Error al obtener los servidores:', error);
         throw error; // Puedes manejar el error según tus necesidades

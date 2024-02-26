@@ -1,14 +1,17 @@
-import Sidebar from "@/components/sidebar"
-import HeadServer from "@/components/server/head"
-import { McServer, States } from "@/lib/types"
-import { notFound } from "next/navigation"
+import ListFiles from "./fileList";
+import { Suspense } from "react";
+import { getServerFiles } from "@/lib/get_server_data";
 
 
-export default function Servers({ params }: { params: { id: string } }) {
+export default async function Servers({ params }: { params: { id: string } }) {
+    const data = await getServerFiles(params.id);
+    if(!data) return <></>;
     return (
-        <section className="space-y-8">
-
+        <section className="space-y-8 bg-neutral-100 rounded-xl text-neutral-600 p-10">
+            <Suspense fallback={<div>Loading...</div>}>
+                <ListFiles files={data} id={params.id}></ListFiles>
+            </Suspense>
         </section>
-    )
-
+    );
 }
+

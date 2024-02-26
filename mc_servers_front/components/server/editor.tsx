@@ -1,68 +1,52 @@
 "use client";
 import Editor, { useMonaco, } from '@monaco-editor/react';
+import { minecraftTheme, otherMinecraftTheme, listLanguages } from "@/lib/theme_data";
 
 // import event onchange monaco
 
 import { useEffect, useState } from 'react';
+import { log } from 'console';
+import { list } from 'postcss';
+
 
 
 export default function MCEditor(
-    { content, onChange }
-        :{ content: string | undefined; onChange?: (value: string | undefined) => void; }
+    { content, onChange, fileType }
+        : { content: string | undefined; onChange?: (value: string | undefined) => void; fileType: string }
 ) {
     const monaco = useMonaco();
 
-    // const [defaultContent, setDefaultContent] = useState('');
-
-    // useEffect(() => {
-
-    //     getFileEdit(id, "/home/manu/mc_servers/truquito/server.properties")
-    //         .then((result) => {
-    //             if (!result) {
-    //                 throw new Error("Error: El resultado está vacío");
-    //             }
-    //             setDefaultContent(result);
-    //         })
-    //         .catch((error) => {
-    //             console.error('Error al obtener el contenido por defecto:', error);
-    //         });
-    // });
-
     useEffect(() => {
         if (!monaco) return;
-        monaco.editor.defineTheme("myTheme", {
-            base: "vs",
-            inherit: false,
-            rules: [
-                // { token: "comment", foreground: "ff0000" },
-                // { token: "comment", foreground: "008800" },
-            ],
-            colors: {
-                "editor.background": "#f5f2f0",
-            },
+        monaco.editor.defineTheme("minecraftTheme", minecraftTheme);
+        monaco.editor.defineTheme("otherMinecraftTheme", otherMinecraftTheme);
+
+
+        Object.keys(listLanguages).forEach((lang) => {
+            monaco.languages.register({ id: lang });
+            monaco.languages.setMonarchTokensProvider(lang, listLanguages[lang]);
         });
-        monaco.languages.setMonarchTokensProvider("properties", {
-            tokenizer: {
-                root: [
-                    [/#.*/, "comment"],
-                    [/[^#].*$/, "string"],
-                    [/$/, "string"],
-                ],
-            },
-        })
-        monaco.editor.setTheme('myTheme');
-        monaco.languages.register({ id: "log" });
+
+        // set theme
+        monaco.editor.setTheme(listLanguages[fileType] ? 'otherMinecraftTheme' : 'minecraftTheme');
+
+        console.log(fileType);
+        console.log(listLanguages[fileType] ? 'otherMinecraftTheme' : 'minecraftTheme');
+
+
+        // onload send to bottom
+        window.scrollTo(0, document.body.scrollHeight);
+
     })
 
-
-
     return (
-        <div className="bg-black h-1/2">
+        <div className=" h-1/2">
             <Editor
                 width="100%"
-                height="15rem"
-                language="json"
+                height="24rem"
+                language={fileType}
                 defaultValue={content}
+                loading={<p className=" text-black text-2xl">Loading...</p>}
             />
         </div>
     );

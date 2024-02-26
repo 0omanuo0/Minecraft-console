@@ -1,29 +1,39 @@
+"use client";
+
+import ServerLogs from "@/components/server/serverLogs";
+
+import Switch from "@/components/switch";
+import { useEffect, useState } from "react";
+import InputCommand from "@/components/server/send_command";
+import io from "socket.io-client";
+
 
 export default function Servers({ params }: { params: { id: string } }) {
+    const [isSwitchChecked, setIsSwitchChecked] = useState(true);
+    const handleSwitchToggle = (isChecked: boolean) => {
+        setIsSwitchChecked(isChecked);
+        console.log("AUTOSCROLL: " + isChecked);
+    };
+    const socket = io('http://localhost:12344');
+
+    useEffect(() => {
+        window.scrollTo(0, document.body.scrollHeight);
+    });
 
     return (
         <section className="space-y-8">
             <div className="h-auto w-full bg-neutral-200 shadow-inner px-2 py-6 rounded-lg grid">
-                <nav id="base" className="relative hidden lg:flex  ml-auto pr-20">
-                    {/* <div className="h-div">
-                                <a>Autoscroll:</a>
-                                <label className="switch">
-                                    <input type="checkbox" id="scroll" checked={true}>
-                                        
-                                    </input>
-                                </label>
-                            </div> */}
-                </nav>
-                <div className="h-[50vh] overflow-y-scroll border p-4" id="log_data">
+                <div className="flex mx-10 px-10 items-end text-3xl border-b-2 border-neutral-700 pb-2">
+                    <h2 className="text-neutral-800" >Console</h2>
+                    <nav id="base" className="relative text-base flex ml-auto items-center">
+                        <Switch onToggle={handleSwitchToggle} name="Autoscroll: " checked={true}></Switch>
+                    </nav>
                 </div>
+
+                <ServerLogs socket={socket} autoscroll={isSwitchChecked} id={params.id}></ServerLogs>
             </div>
             <div className="w-full">
-                <form id="command-form" className="mb-4">
-                    <input type="text" id="content" name="content" autoComplete="off"
-                        className="w-full relative bg-gray-50 ring-0 outline-none border border-neutral-500 text-neutral-900 placeholder-violet-700 text-sm rounded-lg focus:ring-violet-500  focus:border-violet-500 block p-2.5 checked:bg-emerald-500"
-                        placeholder="Command...">
-                    </input>
-                </form>
+                <InputCommand socket={socket} id={params.id}></InputCommand>
                 <div id="autoOPT" className="cursor-div">
                     <ul className="list-none">
                         <li className="list_opt" id="OPTIONS"></li>
