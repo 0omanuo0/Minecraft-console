@@ -10,9 +10,9 @@ const config_options = require('@/data/server_properties.json');
 
 
 
-export default function ConfigOpts({default_values,}:Readonly<{default_values:Config|undefined;}>) {
+export default function ConfigOpts({ default_values, }: Readonly<{ default_values: Config | undefined; }>) {
 
-    if(!default_values) return <></>;
+    if (!default_values) return <></>;
 
     const config = Object.keys(config_options).map((key, index) => {
         const name = key.charAt(0).toLocaleUpperCase() + key.slice(1)
@@ -22,7 +22,9 @@ export default function ConfigOpts({default_values,}:Readonly<{default_values:Co
                     <li key={key}>
                         {name}
                         <input type="checkbox" defaultChecked={default_values[key] as boolean} name={key} id={key}
-                            className=" ml-2 items-end" />
+                            className=" ml-2 items-end" onChange={(e) => {
+                                console.log(e.target.checked);
+                            }} />
                     </li>
                 )
             case 'number':
@@ -37,7 +39,7 @@ export default function ConfigOpts({default_values,}:Readonly<{default_values:Co
                 return (
                     <li key={key}>
                         {name}
-                        <input type="text"  name={key} id={key} defaultValue={default_values[key] as string}
+                        <input type="text" name={key} id={key} defaultValue={default_values[key] as string}
                             className="bg-neutral-100 border border-neutral-900 rounded px-2 p-1 ml-2 items-end" />
                     </li>
                 )
@@ -51,26 +53,26 @@ export default function ConfigOpts({default_values,}:Readonly<{default_values:Co
         }
     });
 
-    
+
     return (
-        <ul key={"optList"} className=" text-neutral-600 list-none grid grid-cols-1 lg:grid-cols-2 grid-flow-row gap-3 items-center">
+        <>
             {config}
-        </ul>
+        </>
     )
 }
 
 
-function Options({ list, ind, default_vaule}: Readonly<{ list: string[][]; ind: string; default_vaule:string}>) {
+function Options({ list, ind, default_vaule }: Readonly<{ list: string[][]; ind: string; default_vaule: string }>) {
 
     const opts = list[0].map((item, index) => {
         return (
-            <option style={{fontFamily:"sans-serif"}} key={index}>{item}</option>
+            <option style={{ fontFamily: "sans-serif" }} key={index}>{item}</option>
         )
     });
     return (
         <select name={ind} id={ind} defaultValue={default_vaule}
             className="bg-neutral-100 border border-neutral-900 rounded px-2 p-1 ml-2 items-end ">
-                {opts}
+            {opts}
         </select>
     )
 }

@@ -11,8 +11,8 @@ import { list } from 'postcss';
 
 
 export default function MCEditor(
-    { content, onChange, fileType }
-        : { content: string | undefined; onChange?: (value: string | undefined) => void; fileType: string }
+    { content, onChange, fileType, value }
+        : { content: string | undefined; onChange?: (value: string | undefined) => void; fileType: string ; value?: string | undefined}
 ) {
     const monaco = useMonaco();
 
@@ -42,6 +42,8 @@ export default function MCEditor(
     return (
         <div className=" h-1/2">
             <Editor
+                value={content}
+                onChange={onChange}
                 width="100%"
                 height="24rem"
                 language={fileType}
