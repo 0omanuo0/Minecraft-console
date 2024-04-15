@@ -3,8 +3,9 @@ import shutil
 from pathlib import Path
 from flask_socketio import SocketIO, emit
 import os
-from python.server import McServer
-from python.tools import get_host_status, generate_tree
+from lib.server import McServer
+from lib.tools import get_host_status, generate_tree
+import lib.creator
 import json
 import subprocess
 import uuid
@@ -17,13 +18,16 @@ import uuid
 async_mode = None
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
+app.config['SECRET_KEY'] = os.urandom(24)
 socketio = SocketIO(app, async_mode=async_mode, cors_allowed_origins="http://localhost:3000")
 
 servers_path = "/home/manu/mc_servers/"
 
-minecraft_server =  McServer(name="server1", id=str(uuid.uuid4()), host='10.1.1.101', path="data/default_server"  )
-minecraft_server2 = McServer(name="truquito",id=str(uuid.uuid4()), host='10.1.1.102', path=servers_path+"truquito")
+McServer.host = 'localhost'
+McServer.serversPath = servers_path
+
+minecraft_server =  McServer(name="server1", id=str(uuid.uuid4()), host='10.1.1.102', path="data/default_server"  )
+minecraft_server2 = McServer(name="truquito",id=str(uuid.uuid4()), host='10.1.1.101', path=servers_path+"truquito")
 
 servers : dict[str, McServer] = {
                                   minecraft_server2.id: minecraft_server2,
@@ -39,6 +43,7 @@ def notFound():
 
 @app.route('/servers')
 def servers_list():
+    a = [server.check_alive() for server in servers.values()]
     data = {"servers":[
         server.json() for server in servers.values()
     ]}
@@ -82,20 +87,21 @@ def server(id):
 @app.route('/create', methods=['GET', 'POST'])
 def create():
     if request.method == 'POST':
-        name = request.form['name']
-        host = request.form['host']
-        path = request.form['path']
-        if not os.path.exists(path):
-            os.makedirs(path)
-            #copy data/default_server content into new dir
-        server = McServer(name=name, host=host, path=path)
-        servers[str(len(servers)+1)] = server
-        return redirect('/server/' + str(len(servers)))
-    elif request.method == 'GET':
-        with open("data/server_properties_create.json", "r") as file:
-            server_config : dict = json.load(file)
-
-        return render_template('create.html', config=server_config, servers=servers)
+        # get the data from aplication/json
+        data = request.get_json()
+        
+        launch_config:dict = data["launchConfig"]
+        name:str = data["serverName"]
+        properties:dict = data["ConfigOpts"]
+        
+        server = lib.creator.create_server(launch_config, name, properties, McServer.serversPath)
+        if isinstance(server, McServer):
+            servers[server.id] = server
+            return jsonify({"status":"Server created", "server":server.json()}), 200
+        else:
+            return jsonify({"status":"Error creating server", "error":str(server)}), 500
+    else:
+        return jsonify({"status":"Method not allowed"}), 405
 
 
 
@@ -121,24 +127,32 @@ def files(id):
 def edit(id):
     #get query data
     server : McServer = servers[id]
+    
+    if not id in servers:
+        return notFound()
+    
+    server : McServer = servers[id]
+    
     if request.method == 'POST':
-        path_file = request.form['path']
-        content = request.form['content']
+        import ast
+        path_file = request.args.get('path')
+        content = dict(request.form)["content"]
+        
         #replace content into file
         with open(path_file, "w") as editor:
-            content = content.replace("\n\n", "\n")
+            # content = content.replace("\n\n", "\n")
             editor.write(content)
         
     elif request.method == 'GET':
         file = request.args.get('path')
         if not server.PATH in file:
-            return redirect('/server/' + id + '/files')
+            return notFound()
         with open(file, "r") as editor:
             file_content = editor.readlines()
             file_content = "".join(file_content)
         content = {"content":file_content}
         return jsonify(content)
-    return ""
+    return "OK"
 
 @app.route('/server/<id>/download')
 def download(id):
@@ -152,8 +166,6 @@ def download(id):
     return send_file(file, as_attachment=True)
 
 
-
-
 @app.route('/server/<id>/config', methods=['GET', 'POST'])
 def config(id):
     servers[id].check_alive()
@@ -164,6 +176,7 @@ def config(id):
     server : McServer = servers[id]
     
     if request.method == 'POST':
+        print(dict(request.form))
         server.update_properties(dict(request.form))
 
     with open("data/server_properties.json", "r") as file:
@@ -187,16 +200,14 @@ def config(id):
 
 @socketio.on('send_command')  # Define a WebSocket event called 'send_command'
 def handle_send_command(data):
-    content : str = data["command"]
+    command : str = data["command"]
     serverid : str = data["serverid"]
     server = servers[serverid]
+    print("Command: " + command)
     if server.is_server_on:
-        content = server.send_rcon_command(content).replace("[0m", "")
-        if content != '':
-            emit('recv', server.send_content(other_content=content))
-
-
-
+        commandResp = server.send_rcon_command(command).replace("[0m", "")
+        if command != '':
+            emit('recv', server.send_content(other_content=[command, commandResp]))
 
 @socketio.event
 def update(data:dict[str,str]):
@@ -210,7 +221,5 @@ def update(data:dict[str,str]):
 
 
 if __name__ == '__main__':
-    # Configuración del servidor Minecraft
-    host = os.getenv("HOST_MC")
     
     app.run(debug=True, port=12344 , host='0.0.0.0')

@@ -1,8 +1,10 @@
 from mctools import RCONClient
-from python.tools import get_process_info
+from lib.tools import get_process_info
 
 class McServer ():
     LIMIT_LINES = 500
+    host:str = None
+    serversPath:str = None
     def __init__(self, name:str, id:str, host:str=None, path:str=None) -> None:
         self.name = name
         self.id = id
@@ -12,10 +14,10 @@ class McServer ():
 
         self.status_server = get_process_info(self.rcon_port) 
 
-        self.host = 'localhost' if host is None else host
+        self.host = McServer.host if host is None else host
         self.is_server_on = False
 
-        self.content = ''
+        self.content : list[str] = []
         self.check_alive()
 
     def update_properties(self, updated:'dict'):
@@ -57,19 +59,32 @@ class McServer ():
                 self.rcon = RCONClient(self.host, port=self.rcon_port)
                 # is_server_on = True
                 if self.rcon.login(self.rcon_password):
+                    self.status_server = get_process_info(self.rcon_port) 
                     self.is_server_on = True
-            except:
+            except ConnectionRefusedError as e:
                 self.rcon = None
-                print("----- ERROR -----    No se ha podido conectar al servidor")
-
-        self.is_server_on = False
+                print("----- ERROR -----    {}".format(e))
+                return False
+            
         try:
-            if self.rcon.login(self.rcon_password):
+            self.status_server = get_process_info(self.rcon_port)
+            if self.status_server["PID"] == 0:
+                raise ConnectionRefusedError("Server is not running")
+                
+            if self.rcon.is_authenticated() and self.rcon.is_connected():
                 self.is_server_on = True
-        except:
+                return True
+            else:
+                if self.rcon.login(self.rcon_password):
+                    self.is_server_on = True
+                    return True
+        except Exception as e:
             self.rcon = None
-            print("----- ERROR -----    No se ha podido conectar al servidor")
-        return self.is_server_on  
+            print("----- ERROR -----    {}".format(e))
+            self.is_server_on = False
+            return False
+
+        
 
     def get_properties(self)->[str,str]:
         rcon_password = None
@@ -112,20 +127,27 @@ class McServer ():
             resp = self.rcon.command(command)
             return resp 
     
-    def send_content(self, other_content=""):
+    def send_content(self, other_content:str|list=None):
+        if type(other_content) == str:
+            other_content = [other_content]
+            
         f = open('{}/logs/latest.log'.format(self.PATH))
-        self.content = f.read()
-        if self.content != '':
-            # if not self.is_server_on:
-            #     return {'data': ""}
-            #return list whith only last three elements
-            self.content = self.content.split('\n')[(-1*self.LIMIT_LINES):]
-            if other_content != '':
-                self.content.append(other_content)
+        newContent = f.read()
+        
+        if newContent != '':
+            newContent = newContent.split('\n')[(-1*self.LIMIT_LINES):]
+            try:
+                indexNewContent = newContent.index(self.content[-1]) if len(self.content) > 0 else 0
+            except:
+                indexNewContent = -1
+            if other_content != None:
+                self.content += other_content
                 f.close()
                 f = open('{}/logs/latest.log'.format(self.PATH), 'w')
                 f.write('\n'.join(self.content))
                 f.close()
+            if indexNewContent != -1:
+                self.content += newContent[indexNewContent:]
             return {'data': self.content}
         
     def json(self):

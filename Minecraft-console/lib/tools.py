@@ -52,10 +52,10 @@ def get_process_info(puerto):
             for conexion in conexiones:
                 if conexion.laddr.port == puerto:
                     return {
-                        'pid': proceso.info['pid'],
-                        'cmd': get_cmd(proceso.info['pid']),
-                        'ram': proceso.info['memory_info'].rss/1024**3,
-                        'cpu': proceso.info['cpu_percent']
+                        'PID': proceso.info['pid'],
+                        'CMD': "".join(get_cmd(proceso.info['pid'])),
+                        'RAM': "{:10.2f}".format(proceso.info['memory_info'].rss/1024**3),
+                        'CPU': "{:10.2f}".format(proceso.info['cpu_percent'])
                     }
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
