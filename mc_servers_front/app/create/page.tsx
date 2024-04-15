@@ -5,6 +5,7 @@ import React, { useState, Suspense, useEffect, use } from "react";
 
 import ServerOptions from "@/components/create/serverOptions";
 import { createServer } from "@/lib/actions";
+import { toast } from "react-toastify";
 
 
 
@@ -56,7 +57,7 @@ export default function createNewServer() {
     }, []);
 
 
-    const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // get form data
         const formData = new FormData(e.currentTarget);
@@ -93,8 +94,17 @@ export default function createNewServer() {
             fieldset?.querySelectorAll('input').forEach((element) => {
                 serverData.ConfigOpts[element.id] = element.value;
             });
-            createServer(serverData);
+            const createResponse = await createServer(serverData);
+            // if everything is ok redirect to the server page
+            if (createResponse) {
+                toast.success("Server created successfully");
+                window.location.href = "/dashboard?success=true";
+            }
+            else {
+                toast.error("Error creating server. Please try again.");
+            }
         }
+
 
     }
 
