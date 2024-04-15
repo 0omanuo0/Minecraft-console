@@ -4,8 +4,10 @@ import { McServer, States, SectionsObj } from "@/lib/types"
 import StateSidebar from "@/components/statesSidebar"
 // get url
 import { notFound, usePathname } from "next/navigation"
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import clsx from 'clsx';
+import { ButtonStart, ButtonStop } from "@/components/server/actionButtons";
 
 const sections: SectionsObj = {
     "console": {
@@ -34,17 +36,16 @@ const sections: SectionsObj = {
     }
 }
 
-export default function HeadServer({ server, }: Readonly<{ server: McServer; }>) {
+export default function HeadServer({ server, id }: Readonly<{ server: McServer; id:string }>) {
     // find section of /servers/id/[section]
     const path = usePathname()
-    const id = path.split("/")[2];
     let section = path.split("/")[3];
     if (section == undefined) section = "console";
     if (sections[section] != undefined) {
         section = section;
     }
 
-
+    console.log("Server: " + server.status)
 
     return (
         <>
@@ -53,14 +54,13 @@ export default function HeadServer({ server, }: Readonly<{ server: McServer; }>)
                 <p className=" text-neutral-100 font-extralight">UUID: {server.id}</p>
                 <div className=" flex">
                     <div className="relative hidden lg:flex ml-auto -mt-14">
-                        {server.status === States.Online &&
-                            <form method="post" action="{{ '/server/' + id + '/stop'  }}">
-                                <button type="submit" className=" bg-red-400 hover:bg-red-500 duration-300 transition-colors px-12 rounded-xl h-fit py-3 text-red-50 shadow-lg text-xl tracking-widest">Stop</button>
-                            </form>}
-                        {server.status === States.Offline &&
-                            <form method="post" action="{{ '/server/' + id + '/start'  }}">
-                                <button type="submit" className=" bg-[#6cabad] hover:bg-[#0E8388] duration-300 transition-colors px-12 rounded-xl h-fit py-3 text-red-50 shadow-lg text-xl tracking-widest">Start</button>
-                            </form>
+                        {
+                            server.status === States.Online &&
+                            <ButtonStop id={id}/>
+                        }
+                        {
+                            server.status === States.Offline &&
+                            <ButtonStart id={id}/>
                         }
                     </div>
                 </div>
@@ -71,8 +71,8 @@ export default function HeadServer({ server, }: Readonly<{ server: McServer; }>)
                     <li key={"name"}>Server: <span>{server.name} <StateSidebar state={server.status}></StateSidebar> </span></li>
                     <li key={"host"}>Host: <span>{server.host} </span></li>
                     <li key={"PID"}>PID: <span>{server.process_status.PID} </span></li>
-                    <li key={"CPU"}>CPU usage: <span>{server.process_status.CPU.toFixed(2)} </span></li>
-                    <li key={"RAM"}>RAM usage: <span>{server.process_status.RAM.toFixed(2)} </span></li>
+                    <li key={"CPU"}>CPU usage: <span>{server.process_status.CPU} </span>%</li>
+                    <li key={"RAM"}>RAM usage: <span>{server.process_status.RAM} </span>GB</li>
                     <li key={"CMD"}>cmd: <span>{server.process_status.CMD} </span></li>
                 </ul>
                 <ul className=" flex mt-6">
