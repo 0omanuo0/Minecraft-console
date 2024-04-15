@@ -18,8 +18,9 @@ export default function Sidebar({ serversList, }: Readonly<{ serversList: McServ
     if (serversList) {
         servers = serversList.map((server, index) => {
             return (
-                <li key={index} className=" hover:border-l-2 pl-8 text-white hover:opacity-80 transition-opacity duration-300">
+                <li key={index} className=" hover:border-l-2 transition-all pl-8 text-white hover:opacity-80  duration-100 items-center">
                     <Link href={`/server/${server.id}`}>
+                    <i className="bi bi-circle-fill text-xs mr-2  "></i>
                         {server.name}
                         <StateSidebar state={server.status}></StateSidebar>
                     </Link>
@@ -30,7 +31,7 @@ export default function Sidebar({ serversList, }: Readonly<{ serversList: McServ
 
 
     return (
-        <div className="sidebar fixed top-0 bottom-0 lg:left-0 p-2 w-[300px] overflow-y-auto text-center bg-[#233333] h-[100vh]">
+        <div className="sidebar fixed top-0 bottom-0 lg:left-0 p-2 px-4 w-[16rem] overflow-y-auto text-center bg-[#233333] h-[100vh]">
             <div className="text-gray-100 text-xl">
                 <div className="p-2.5 mt-1 flex items-center">
                     <i className="bi bi-app-indicator px-2 py-1 rounded-md bg-[#2E4F4F]"></i>
@@ -47,14 +48,14 @@ export default function Sidebar({ serversList, }: Readonly<{ serversList: McServ
                 <i className="bi bi-house-door-fill"></i>
                 <span className="text-[15px] ml-4 text-gray-200 font-bold text-lg">Home</span>
             </Link>
-            <div onClick={toggleList} className="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#0E8388] text-white">
+            <div onClick={toggleList} className=" p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#0E8388] text-white">
                 <i className="bi bi-hdd-network"></i>
                 <span className="text-[15px] ml-4 text-gray-200 font-bold text-lg">Servers</span>
             </div>
             <div id="servers_list" className={showList ? "block" : "hidden" + " text-left mx-4 mt-4"}>
                 <ul className=" space-y-2 font-litght text-left" >
-                    <li key={"add"} className="hover:border-l-2 pl-6 text-white hover:opacity-80 transition-opacity duration-300 mt-2">
-                        <a href="/create"><i className="bi bi-cloud-plus mr-2"></i>Create server</a>
+                    <li key={"add"} className="hover:border-l-2 pl-8 text-white hover:opacity-80 transition-all duration-100 mt-2">
+                        <a href="/create"><i className="bi bi-cloud-plus mr-2 "></i>Create server</a>
                     </li>
                     {servers}
                 </ul>
