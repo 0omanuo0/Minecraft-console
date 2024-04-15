@@ -1,5 +1,6 @@
 from mctools import RCONClient
 from lib.tools import get_process_info
+import os
 
 class McServer ():
     LIMIT_LINES = 500
@@ -36,24 +37,33 @@ class McServer ():
             newconfig[key] = value
 
         lines = []
-        with open(self.PATH + "/server.properties", "r") as file:
-            lines = file.readlines()
-        with open(self.PATH + "/server.properties", "w") as file:
-            for line in lines:
-                if line.startswith("#"):
-                    file.write(line)
-                    continue
-                found = False
+        # if dont exist the file, create it
+        if not os.path.exists(self.PATH + "/server.properties"):
+            with open(self.PATH + "/server.properties", "w") as file:
                 for key, value in newconfig.items():
-                    if line.startswith(key):
-                        file.write(key + "=" + str(value) + "\n")
-                        found = True
-                        break
-                if not found:
-                    file.write(line)
+                    file.write(key + "=" + str(value) + "\n")
+            return self.get_properties()
+        else:
+            with open(self.PATH + "/server.properties", "r") as file:
+                lines = file.readlines()
+            with open(self.PATH + "/server.properties", "w") as file:
+                for line in lines:
+                    if line.startswith("#"):
+                        file.write(line)
+                        continue
+                    found = False
+                    for key, value in newconfig.items():
+                        if line.startswith(key):
+                            file.write(key + "=" + str(value) + "\n")
+                            found = True
+                            break
+                    if not found:
+                        file.write(line)
         self.get_properties()
                 
     def check_alive(self) -> bool:
+        if self.rcon_password is None:
+            return False
         if not self.is_server_on:
             try:
                 self.rcon = RCONClient(self.host, port=self.rcon_port)
@@ -89,6 +99,8 @@ class McServer ():
     def get_properties(self)->[str,str]:
         rcon_password = None
         rcon_port = None
+        if not os.path.exists(self.PATH + "/server.properties"):
+            return None, None
         with open(self.PATH + "/server.properties", "r") as file:
             lines = file.readlines()
             for line in lines:
@@ -128,6 +140,8 @@ class McServer ():
             return resp 
     
     def send_content(self, other_content:str|list=None):
+        if not os.path.exists(f'{self.PATH}/logs/latest.log'):
+            return {'data': []}
         if type(other_content) == str:
             other_content = [other_content]
             

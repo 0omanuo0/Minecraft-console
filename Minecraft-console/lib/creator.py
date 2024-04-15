@@ -8,7 +8,7 @@ import json
 
 def create_server(launch_config:dict, name:str, properties:dict, servers_path:str)->McServer:
     id = str(uuid.uuid4())
-    newpath = f"{servers_path}/{id}"
+    newpath = f"{servers_path}{id}"
     
     if not os.path.exists(newpath):
         try:
@@ -23,7 +23,7 @@ def create_server(launch_config:dict, name:str, properties:dict, servers_path:st
 #{}
 eula=true
                         """.format(date.strftime("%Y-%m-%d %H:%M:%S")))
-            server = McServer(name=name, host=server.McServer.host, path=newpath, id=id)
+            server = McServer(name=name, host=McServer.host, path=newpath, id=id)
             server.update_properties(properties)
             return server
         except Exception as e:
