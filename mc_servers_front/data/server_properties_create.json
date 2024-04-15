@@ -1,0 +1,52 @@
+{
+    "port":25565,
+    "rcon.port": 25566,
+    "rcon.password": "XXXXXXXX",
+    "enable-rcon":true,
+    "allow-flight": true,
+    "allow-nether": true,
+    "difficulty": {
+        "easy": [
+            "easy",
+            "normal",
+            "hard"
+        ]
+    },
+    "enable-command-block": false,
+    "gamemode": {
+        "survival": [
+            "survival",
+            "creative",
+            "adventure"
+        ]
+    },
+    "generate-structures": true,
+    "hardcore": false,
+    "hide-online-players": false,
+    "level-name": "world",
+    "level-seed": "",
+    "level-type": {
+        "minecraft\\:normal": [
+            "minecraft\\:normal",
+            "minecraft\\:flat",
+            "minecraft\\:large_biomes",
+            "minecraft\\:amplified",
+            "minecraft\\:single_biome_surface"
+        ]
+    },
+    "max-players" : 20,
+    "max-tick-time" : 60000,
+    "max-world-size" : 29999984,
+    "motd": "A Minecraft Server",
+    "online-mode": true,
+    "op-permission-level": 4,
+    "player-idle-timeout": 0,
+    "pvp": true,
+    "simulation-distance": 10,
+    "spawn-animals" : true,
+    "spawn-monsters" : true,
+    "spawn-npcs" : true,
+    "spawn-protection" : 16,
+    "view-distance": 10,
+    "white-list": false
+}
