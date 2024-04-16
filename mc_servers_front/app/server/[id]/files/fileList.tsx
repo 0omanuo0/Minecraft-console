@@ -1,7 +1,7 @@
 "use client";
 import { Files } from "@/lib/types";
 import ButtonFiles from "./buttonFiles";
-import { ReactNode, useState } from "react";
+import { ReactNode, use, useEffect, useState } from "react";
 import {
     FolderIcon,
     AdjustmentsHorizontalIcon,
@@ -9,8 +9,11 @@ import {
     ChatBubbleBottomCenterTextIcon,
     DocumentTextIcon,
     DocumentIcon,
-    CodeBracketIcon
+    CodeBracketIcon,
+    ArchiveBoxIcon,
+    ArrowLongLeftIcon
 } from '@heroicons/react/24/outline';
+import { set } from "zod";
 
 
 const icons: { [key in string]: ReactNode } = {
@@ -19,6 +22,7 @@ const icons: { [key in string]: ReactNode } = {
     "jar": <CommandLineIcon className="w-6 mr-2"></CommandLineIcon>,
     "log": <ChatBubbleBottomCenterTextIcon className="w-6 mr-2"></ChatBubbleBottomCenterTextIcon>,
     "txt": <DocumentTextIcon className="w-6 mr-2"></DocumentTextIcon>,
+    "zip": <ArchiveBoxIcon className="w-6 mr-2"></ArchiveBoxIcon>
 }
 
 
@@ -27,47 +31,88 @@ function isFile(file: string) {
     return match ? match[0].substring(1) : undefined;
 }
 
+
+
+
 export default function ListFiles({ id, files }: Readonly<{ id: string; files: Files }>) {
-    const dirs = files.dir.map((element) => {
-        return <Directory id={id} files={element}></Directory>
-    })
-    const file = files.files.map((element) => {
-        const extension = isFile(element);
-        let icon: ReactNode;
 
-        if (!extension) icon = <></>;
-        else icon = icons[extension];
+    const [folder, setFolder] = useState([<></>]);
+    const [back, setBack] = useState<(Files)[]>([files]);
 
-        if(!icon) icon = <DocumentIcon className="w-6 mr-2"></DocumentIcon>;
+    useEffect(() => {
+        if (!files) setFolder([<></>]);
+        setFolder(createList(files, id));
+    }, []);
+
+    return (
+        <div>
+            {
+                back.length > 1 ?
+                    <button
+                        onClick={() => {
+                           // remove the last element from the list and createList()
+                            back.pop();
+                            setFolder(createList(back[back.length - 1], id));
+                        }}
+                        className="hover:bg-gray-200 rounded-lg px-4 py-2 flex mb-2"
+                    >
+                        <ArrowLongLeftIcon className="w-6 mr-2"></ArrowLongLeftIcon>Back
+                    </button>
+                    : <></>}
+            <ul className="ml-4 space-y-2 grid grid-cols-3 gap-4">
+                {folder}
+            </ul>
+        </div>
+    )
+
+
+    function Directory({ files_dir,id }: { files_dir: Files;id: string;}) {
+        if (!files_dir) return <></>;
+        const icon = <FolderIcon className="w-6 mr-2" />;
 
         return (
-            <li key={element}>
-                <ButtonFiles id={id} icon={icon} text={element} path={files.rute + "/" + element}></ButtonFiles>
+            <li key={files_dir.rute + files_dir.name}>
+                <ButtonFiles
+                    id={id}
+                    icon={icon} text={files_dir.name} path={files_dir.rute}
+                    onClick={() => setFolder(createList(files_dir, id))}
+                ></ButtonFiles>
             </li>
         )
-    });
-    return (
-        <ul className="ml-4 space-y-2">
-            {dirs}{file}
-        </ul>
-    )
+    }
+
+    function createList(
+        files_dir: Files,
+        id: string,
+    ) {
+        const a = back;
+        // ckeck if the last element is the same as the current
+        if (a[a.length - 1] !== files_dir) {
+            a.push(files_dir);
+        }
+        setBack(a);
+        console.log(back);
+
+        const file = files_dir.files.map((element) => {
+            const extension = isFile(element);
+            let icon: ReactNode;
+
+            if (!extension) icon = <></>;
+            else icon = icons[extension];
+
+            if (!icon) icon = <DocumentIcon className="w-6 mr-2"></DocumentIcon>;
+
+            return (
+                <li key={element}>
+                    <ButtonFiles id={id} icon={icon} text={element} path={files_dir.rute + "/" + element}></ButtonFiles>
+                </li>
+            )
+        });
+        const dirs = files_dir.dir.map((element) => {
+            return <Directory id={id} files_dir={element}></Directory>
+        });
+        return [...dirs, ...file];
+    }
 }
 
-function Directory({ id, files }: Readonly<{ id: string; files: Files }>) {
-    const [isExpanded, toggleExpanded] = useState(false);
-    if (!files) return <></>;
-    const icon = <FolderIcon className="w-6 mr-2" />;
-    return (
-        <li key={files.rute + files.name}>
-            <ButtonFiles
-                id={id}
-                icon={icon} text={files.name} path={files.rute}
-                onClick={() => toggleExpanded(!isExpanded)}
-            ></ButtonFiles>
-            {
-                isExpanded && <ListFiles id={id} files={files} />
-            }
-        </li>
-    )
 
-}

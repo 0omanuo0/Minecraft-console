@@ -27,7 +27,7 @@ export default function Layout({
                 <ToastNotify />
                 <div className="">
                     <Sidebar />
-                    <main className="space-y-8 mt-10 ml-[21rem] mr-10">
+                    <main className="space-y-8 mt-10 ml-[21rem] mr-10 mb-16">
                         <HeadServer id={params.id} />
                         {children}
                     </main>

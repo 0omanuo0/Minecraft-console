@@ -78,19 +78,17 @@ const skeleton_head = (
 
 export default function HeadServer({ id }: Readonly<{ id: string }>) {
     // find section of /servers/id/[section]
-    const path = usePathname()
-    let section = path.split("/")[3] ?? "console";
 
     const [server, setServer] = useState(skeleton_head);
 
     useEffect(() => {
+
         const serversList = async () => {
             const response = await fetch("/api/server/" + id);
             const server: McServer | undefined = await response.json();
             if (!server) {
                 notFound();
             }
-
             setServer(
                 <>
                     <section className=" border-b-2 pb-6">
@@ -120,26 +118,7 @@ export default function HeadServer({ id }: Readonly<{ id: string }>) {
                             <li key={"CMD"}>cmd: <span>{server.process_status.CMD} </span></li>
                         </ul>
                         <ul className=" flex mt-6">
-                            {
-                                Object.keys(sections).map((section_name, index) => {
-                                    return (
-                                        <li key={section_name} id={section_name} className={clsx("flex-1 text-center rounded-full px-1 py-1",
-                                            {
-                                                "bg-gray-200": section === section_name
-                                            },
-                                        )}
-                                        >
-                                            {sections[section_name].Path &&
-                                                <Link href={"/server/" + id + sections[section_name].Path}>{sections[section_name].name}</Link>
-                                            }
-                                            {!sections[section_name].Path &&
-                                                sections[section_name].name
-                                            }
-
-                                        </li>
-                                    )
-                                })
-                            }
+                                <Sections id={id}></Sections>
                         </ul>
                     </section>
                 </>
@@ -161,4 +140,27 @@ export default function HeadServer({ id }: Readonly<{ id: string }>) {
             {server}
         </>
     )
+}
+
+function Sections({id}: {id:string}) {
+    // get last element of path, if is undefined, return "console"
+    const pathName = usePathname().split("/")[3] || "console";
+    return Object.keys(sections).map((section_name, index) => {
+        return (
+            <li key={section_name} id={section_name} className={clsx("flex-1 text-center rounded-full px-1 py-1",
+                {
+                    "bg-gray-200": pathName === section_name
+                },
+            )}
+            >
+                {sections[section_name].Path &&
+                    <Link href={"/server/" + id + sections[section_name].Path}>{sections[section_name].name}</Link>
+                }
+                {!sections[section_name].Path &&
+                    sections[section_name].name
+                }
+
+            </li>
+        )
+    })
 }

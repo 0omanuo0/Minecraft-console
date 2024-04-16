@@ -48,7 +48,6 @@ export default function Sidebar() {
             // wait 3s
             // await new Promise(resolve => setTimeout(resolve, 5000));
             if (!data) redirect("/dashboard");
-            console.log(data, serverListOld)
             if (data.length !== serverListOld.length) {
                 toast("Server list updated");
                 serverListOld = data;

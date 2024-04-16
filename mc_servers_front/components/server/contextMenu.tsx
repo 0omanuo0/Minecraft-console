@@ -17,7 +17,6 @@ const isFile = (path: string) => {
 
 export default function ContextMenu( {file, position, id}: {file: string; position: [number, number];id:string}) {
     // 
-
     const contextCommand = (e: React.MouseEvent, file:string) => {
         // prevent parect onclick
         e.preventDefault();
