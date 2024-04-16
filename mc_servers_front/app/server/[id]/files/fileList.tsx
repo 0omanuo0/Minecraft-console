@@ -42,7 +42,7 @@ export default function ListFiles({ id, files }: Readonly<{ id: string; files: F
 
         return (
             <li key={element}>
-                <ButtonFiles icon={icon} text={element} path={files.rute + "/" + element}></ButtonFiles>
+                <ButtonFiles id={id} icon={icon} text={element} path={files.rute + "/" + element}></ButtonFiles>
             </li>
         )
     });
@@ -60,6 +60,7 @@ function Directory({ id, files }: Readonly<{ id: string; files: Files }>) {
     return (
         <li key={files.rute + files.name}>
             <ButtonFiles
+                id={id}
                 icon={icon} text={files.name} path={files.rute}
                 onClick={() => toggleExpanded(!isExpanded)}
             ></ButtonFiles>

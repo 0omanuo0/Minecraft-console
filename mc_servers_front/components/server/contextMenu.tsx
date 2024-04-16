@@ -15,15 +15,21 @@ const isFile = (path: string) => {
 }
 
 
-export default function ContextMenu( {file, position}: {file: string; position: [number, number]}) {
+export default function ContextMenu( {file, position, id}: {file: string; position: [number, number];id:string}) {
     // 
 
     const contextCommand = (e: React.MouseEvent, file:string) => {
         // prevent parect onclick
         e.preventDefault();
-        console.log(e.currentTarget.id + file);
         if(e.currentTarget.id === ContextMenuOptions.DOWNLOAD){
-            console.log("Option: Download");
+            // get file from /api/server/[id]/download?f="file" and download
+            const url = `/api/server/${id}/download?f=${file}`;
+            window.open(url);
+        }
+        if(e.currentTarget.id === ContextMenuOptions.DELETE){
+            // delete file from /api/server/[id]/delete?f="file"
+            const url = `/api/server/${id}/delete?f=${file}`;
+            fetch(url, {method: 'DELETE'});
         }
     }
     
@@ -34,8 +40,6 @@ export default function ContextMenu( {file, position}: {file: string; position: 
             menu.style.left = `${position[0]}px`;
             menu.style.top = `${position[1]}px`;
         }
-        console.log("File: " + file);
-        console.log("isUndefined: " + isFile(file));
         
     });
 

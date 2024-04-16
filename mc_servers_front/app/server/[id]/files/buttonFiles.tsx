@@ -7,8 +7,8 @@ import { EditableFiles } from "@/lib/types";
 
 
 export default function ButtonFiles(
-    { icon, text, path, onClick }:
-        { icon: ReactNode; text: string, path: string, onClick?: (e: React.MouseEvent) => (void) }
+    { icon, text, path, onClick, id }:
+        { icon: ReactNode; text: string, path: string, onClick?: (e: React.MouseEvent) => (void) , id: string}
 ) {
     const [contextMenu, setContextMenu] = useState<ReactNode | null>(null);
 
@@ -24,7 +24,7 @@ export default function ButtonFiles(
     }
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
-        setContextMenu(<ContextMenu position={[e.pageX, e.pageY]} file={path} />);
+        setContextMenu(<ContextMenu position={[e.pageX, e.pageY]} file={path} id={id} />);
 
         // Agrega un event listener para cerrar el menú cuando se hace clic fuera de él
         window.addEventListener('mousedown', handleOutsideClick);
