@@ -99,7 +99,7 @@ export async function stop(id: string) {
         });
 }
 
-export async function create(){
+export async function create() {
     "use server";
     fetch(`${api_ip}/server`, {
         method: 'POST',
@@ -111,4 +111,22 @@ export async function create(){
         .catch((error) => {
             console.error('Error:', error);
         });
+}
+
+export async function createFolder(id: string, folder: string, path: string) : Promise<{[key in string]: any}> {
+    "use server";
+
+    noStore();
+    try {
+        // post
+        const response = await fetch(`${api_ip}/server/${id}/folder?folder=${folder}&path=${path}`, {
+            method: 'POST',
+        });
+        const data = await response.json();
+        return data;
+    }
+    catch (error) {
+        return { error: error };
+    }
+    
 }

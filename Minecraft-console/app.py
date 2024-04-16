@@ -4,7 +4,7 @@ from pathlib import Path
 from flask_socketio import SocketIO, emit
 import os
 from lib.server import McServer
-from lib.tools import get_host_status, generate_tree
+from lib.tools import get_host_status, generate_tree, createFolder
 import lib.creator
 import json
 import subprocess
@@ -53,6 +53,21 @@ def servers_list():
 def host():
     data = get_host_status()
     return jsonify(data)
+
+@app.route('/server/<id>/folder', methods=['POST'])
+def create_folder(id):
+    if not id in servers:
+        return notFound()
+    
+    # get the query param path
+    path = request.args.get('path')
+    folder = request.args.get('folder')
+    
+    result = createFolder(path, folder)
+    if result == True:
+        return jsonify({"status":"Folder created"}), 200
+    else:
+        return jsonify({"status":"Error creating folder", "error":str(result)}), 500
 
 
 @app.route('/server/<id>/stop', methods=['POST'])

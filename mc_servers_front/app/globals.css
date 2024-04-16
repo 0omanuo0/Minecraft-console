@@ -31,3 +31,18 @@ body {
     text-wrap: balance;
   }
 }
+
+@keyframes pop-up-animation {
+  0% {
+    background-color: transparent;
+    @apply backdrop-blur-0;
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 0.548);
+    @apply backdrop-blur-sm;
+  }
+}
+
+.pop-up {
+  animation: pop-up-animation .3s ease-in-out forwards;
+}

@@ -4,6 +4,13 @@ import platform
 import os
 
 
+def createFolder(path, folder):
+    try:
+        os.makedirs(path + "/" + folder)
+        return True
+    except Exception as e:
+        return e
+
 def get_host_status():
     cpu_percent = psutil.cpu_percent()
     cpu_count = psutil.cpu_count()
