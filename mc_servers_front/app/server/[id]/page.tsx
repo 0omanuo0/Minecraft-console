@@ -22,8 +22,8 @@ export default function Servers({ params }: { params: { id: string } }) {
 
     return (
         <section className="space-y-8">
-            <div className="h-auto w-full bg-neutral-200 shadow-inner px-2 py-6 rounded-lg grid">
-                <div className="flex mx-10 px-10 items-end text-3xl border-b-2 border-neutral-700 pb-2">
+            <div className="h-auto w-full bg-neutral-100 shadow-inner px-2 py-6 rounded-lg grid">
+                <div className="flex mx-10 mb-6 mt-2 px-10 items-end text-3xl border-b-2 pb-4">
                     <h2 className="text-neutral-800" >Console</h2>
                     <nav id="base" className="relative text-base flex ml-auto items-center">
                         <Switch onToggle={handleSwitchToggle} name="Autoscroll: " checked={true}></Switch>

@@ -59,7 +59,7 @@ export default function ListFiles({ id, files }: Readonly<{ id: string; files: F
                         <ArrowLongLeftIcon className="w-6 mr-2"></ArrowLongLeftIcon>Back
                     </button>
                     : <></>}
-            <ul className="ml-4 space-y-2 grid grid-cols-3 gap-4">
+            <ul className="ml-4 space-y-2 grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
                 {folder}
             </ul>
         </div>
