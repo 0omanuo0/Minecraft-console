@@ -59,6 +59,6 @@ export interface Server {
     }
     ram : {
         usage : number,
-        available : number
+        total : number
     }
 }

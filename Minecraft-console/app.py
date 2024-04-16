@@ -49,6 +49,11 @@ def servers_list():
     ]}
     return jsonify(data)
 
+@app.route('/host')
+def host():
+    data = get_host_status()
+    return jsonify(data)
+
 
 @app.route('/server/<id>/stop', methods=['POST'])
 def stop(id):
@@ -93,6 +98,10 @@ def create():
         launch_config:dict = data["launchConfig"]
         name:str = data["serverName"]
         properties:dict = data["ConfigOpts"]
+        
+        file = data["file"]
+        
+        print(file)
         
         server = lib.creator.create_server(launch_config, name, properties, McServer.serversPath)
         if isinstance(server, McServer):

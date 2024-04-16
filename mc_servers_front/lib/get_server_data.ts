@@ -1,4 +1,4 @@
-import { McServer, McServerList, Files } from "@/lib/types"
+import { McServer, McServerList, Files, Server } from "@/lib/types"
 import { unstable_noStore as noStore } from 'next/cache';
 
 export const api_ip = process.env.SERVER_API_IP;
@@ -77,6 +77,20 @@ export async function getServerFiles(id:string, path?:string) {
         return data;
     } catch (error) {
         console.error('Error al obtener los servidores:', error);
+        throw error; // Puedes manejar el error según tus necesidades
+    }
+}
+
+export async function getHostStatus() {
+    noStore();
+    try {
+        const res = await fetch(`${api_ip}/host`);
+        if (!res.ok) return undefined;
+
+        const data : Server = await res.json();
+        return data;
+    } catch (error) {
+        console.error('Error al obtener el estado del host:', error);
         throw error; // Puedes manejar el error según tus necesidades
     }
 }

@@ -11,7 +11,20 @@ def get_host_status():
     hostname = socket.gethostname()
     SO = platform.uname().system + " " +  " " + platform.uname().release
     cpu_type = platform.uname().processor
-    return {"cpu":cpu_percent, "cpu_count":cpu_count, "ram":ram, "hostname":hostname, "SO":SO, "cpu_type":cpu_type}
+    
+    return {
+        "host" : hostname,
+        "SO":SO, 
+        "cpu" : {
+            "name" : cpu_type,
+            "cpuUsage" : cpu_percent,
+            "cores" : cpu_count
+        },
+        "ram" : {
+            "total" : ram.total,
+            "usage" : ram.used
+        }
+    }
 
 
 def generate_tree(ruta:str, name:str):
