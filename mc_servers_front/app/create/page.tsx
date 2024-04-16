@@ -4,8 +4,11 @@ import ConfigOpts from "@/components/server/config_opt";
 import React, { useState, Suspense, useEffect, use } from "react";
 
 import ServerOptions from "@/components/create/serverOptions";
+import { getVersions } from "@/components/create/getVersions";
 import { createServer } from "@/lib/actions";
 import { toast } from "react-toastify";
+import { get } from "http";
+import { error } from "console";
 
 
 
@@ -16,54 +19,37 @@ export default function createNewServer() {
     const [formState, setFormState] = useState<{ [key: string]: string }>({});
 
     // fetch all minecraft versions https://launchermeta.mojang.com/mc/game/version_manifest.json
-    const getVersions = async (snapshots?: boolean) => {
-        try {
-            const response = await fetch('https://launchermeta.mojang.com/mc/game/version_manifest.json')
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const data = await response.json();
-
-            var versionsTmp: React.ReactElement[] = [];
-
-            if (snapshots) {
-                data.versions.forEach((element: { type: string; id: string; }) => {
-                    versionsTmp.push(
-                        <option key={element.id} value={element.id}>{element.id}</option>
-                    );
-                });
-            }
-            else {
-                data.versions.forEach((element: { type: string; id: string; }) => {
-                    if (element.type === 'release') {
-                        versionsTmp.push(
-                            <option key={element.id} value={element.id}>{element.id}</option>
-                        );
-                    }
-                });
-            }
-            setVersions(versionsTmp);
-            console.log(data);
-        }
-        catch (error) {
-            console.error('There has been a problem with your fetch operation:', error);
-        }
-    }
 
     useEffect(() => {
-        getVersions(false);
+        getVersions().then((data) => {
+            setVersions(data);
+        });
     }, []);
 
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // get form data
-        const formData = new FormData(e.currentTarget);
         let errors: { [key in string]: string } = {};
 
-        const opts: { [key in string]: string } = {};
+        // get file from input id="zip"
+        const file = document.getElementById('zip') as HTMLInputElement;
+        let fileUploaded = file.files?.[0];
+        // if there is a file, upload it
+        if (file.files && fileUploaded) {
+            // ensure that is a zip file before uploading
+            if (fileUploaded.type !== 'application/x-zip-compressed' ) {
+                toast.error("Please upload a valid zip file");
+                errors["file"] = "Please upload a valid zip file";
+            }
+            else{
+                toast.success("File uploaded successfully");
+            }
+        }
+
+        // get form data
+        const formData = new FormData(e.currentTarget);
+
+        const opts: { [key in string]: any } = {};
         // server values
         const serverData = {
             serverName: formData.get('serverName'),
@@ -73,6 +59,7 @@ export default function createNewServer() {
                 rMax: Number(formData.get('rMax')),
                 port: Number(formData.get('Port'))
             },
+            zip : fileUploaded ?? undefined,
             ConfigOpts: opts
         }
 
@@ -86,14 +73,17 @@ export default function createNewServer() {
             setFormState(errors);
             return;
         }
+        
         else {
             // get the ConfigOpts fieldset from the form
             const form = document.querySelector('form');
-            const fieldset = form?.querySelector('fieldset[name="ConfigOpts"]');
-            // get all the values
-            fieldset?.querySelectorAll('input').forEach((element) => {
-                serverData.ConfigOpts[element.id] = element.value;
-            });
+            if(!fileUploaded){
+                const fieldset = form?.querySelector('fieldset[name="ConfigOpts"]');
+                // get all the values
+                fieldset?.querySelectorAll('input').forEach((element) => {
+                    serverData.ConfigOpts[element.id] = element.value;
+                });
+            }
             const createResponse = await createServer(serverData);
             // if everything is ok redirect to the server page
             if (createResponse) {

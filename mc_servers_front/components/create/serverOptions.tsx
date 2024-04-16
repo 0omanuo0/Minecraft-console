@@ -90,6 +90,9 @@ export default function ServerOptions({ children, onChange, versions, formState 
 
             <div className="absolute bottom-6 mr-10">
                 <h2 className=" border-b-2 border-neutral-200 mb-3">Instead import folder (as zip)</h2>
+                {
+                    formState.file ? <span className="text-red-500">{formState.file}</span> : <></>
+                }
                 <div className="flex items-center">
                     <input
                         id="zip"
