@@ -24,7 +24,7 @@ export const otherMinecraftTheme: editor.IStandaloneThemeData = {
         { token: "number", foreground: "008888"},
     ],
     colors: {
-        "editor.background": "#f5f2f0",
+        "editor.background": "#f0ece9",
     },
 };
 

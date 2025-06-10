@@ -40,12 +40,12 @@ export default function MCEditor(
     })
 
     return (
-        <div className=" h-1/2">
+        <div className="">
             <Editor
                 value={content}
                 onChange={onChange}
                 width="100%"
-                height="24rem"
+                height="calc(80vh - 8rem)"
                 language={fileType}
                 defaultValue={content}
                 loading={<p className=" text-black text-2xl">Loading...</p>}
