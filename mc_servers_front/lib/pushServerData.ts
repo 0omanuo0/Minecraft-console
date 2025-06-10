@@ -18,7 +18,7 @@ export async function sendConfig(formData: FormData, id: string) {
                     formData2.append(key, "off");
                     break;
                 case 'number':
-                    formData2.append(key, config_options[key]);
+                    formData2.append(key, config_options[key].toString());
                     break;
                 case 'object':
                 case 'string':

@@ -6,10 +6,16 @@ export const api_ip = process.env.SERVER_API_IP;
 export async function getServers() {
     noStore();
     try {
-        const res = await fetch(`${api_ip}/servers`);
+        let res;
+        try {
+            res = await fetch(`${api_ip}/servers`);
+        } catch (fetchError) {
+            console.error('Fetch failed (server may be down):', fetchError);
+            return undefined;
+        }
         
         if (!res.ok) {
-            return undefined;
+            return null;
         }
 
         const data = await res.json();
@@ -55,6 +61,10 @@ export async function getFileEdit(id:string, path:string) {
         const data : {[key in string]: string} = await res.json();
         
         const server : string = data.content;
+        if(typeof server !== "string") {
+            console.error("El contenido del servidor no es una cadena de texto");
+            return undefined;
+        }
         
         return server;
         
