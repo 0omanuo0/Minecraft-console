@@ -5,6 +5,7 @@ from flask_socketio import SocketIO, emit
 import os
 from lib.server import McServer
 from lib.tools import get_host_status, generate_tree
+from lib.db import Database
 import lib.creator
 import json
 import subprocess
@@ -21,18 +22,18 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
 socketio = SocketIO(app, async_mode=async_mode, cors_allowed_origins="http://localhost:3000")
 
-servers_path = "/home/manu/mc_servers/"
+servers_path='Minecraft-console/data'
 
 McServer.host = 'localhost'
 McServer.serversPath = servers_path
 
-minecraft_server =  McServer(name="server1", id=str(uuid.uuid4()), host='10.1.1.102', path="data/default_server"  )
-minecraft_server2 = McServer(name="truquito",id=str(uuid.uuid4()), host='10.1.1.101', path=servers_path+"truquito")
+servers : dict[str, McServer] = {}
 
-servers : dict[str, McServer] = {
-                                  minecraft_server2.id: minecraft_server2,
-                                  minecraft_server.id: minecraft_server
-                                }
+# Load servers from database
+db = Database(servers_path=servers_path)
+for server_data in db.get_servers():
+    server = McServer(name=server_data[2], id=str(server_data[1]), host=server_data[3] if server_data[3] != "0.0.0.0" else "localhost", path=server_data[6])
+    servers[server.id] = server
 
 servers_process : dict[str, subprocess.Popen] = {}
 
@@ -67,7 +68,36 @@ def start(id):
 
     server : McServer = servers[id]
     #open subprocess running java -jar server.jar nogui in server.PATH and redirect stdout to log_server variable
-    server_proc = subprocess.Popen(["java", "-jar", "server.jar", "nogui"], cwd=server.PATH, stdout=None)
+    current_working_dir = os.getcwd()
+    path = os.path.join(current_working_dir, server.PATH)
+    #find .jar in path
+    jar_files = [f for f in os.listdir(path) if f.endswith('.jar')]
+    if not jar_files:
+        return notFound()
+    
+    executable_path = os.path.join(path, jar_files[0])
+    server_db = db.get_server_by_uuid(id)
+
+    # Extract RAM and additional arguments from the database
+    ram_max = str(int(server_db[7]*1024)) + "M" if server_db[7] else "1024M"
+    ram_min = str(int(server_db[8]*1024)) + "M" if server_db[8] else "512M"
+    auto_start = server_db[11] if server_db[11] else False
+    other_args = server_db[9] if server_db[9] else ""
+
+    java_args = [
+        "java",
+        f"-Xmx{ram_max}",
+        f"-Xms{ram_min}",
+        "-jar",
+        executable_path,
+        "nogui"
+    ]
+
+    # Add any additional arguments if present
+    if other_args:
+        java_args.extend(other_args.split())
+
+    server_proc = subprocess.Popen(java_args, cwd=path, stdout=None, stderr=None)
     servers_process[id] = server_proc
     data = {"status":"Started"}
     return jsonify(data)
@@ -95,6 +125,23 @@ def create():
         properties:dict = data["ConfigOpts"]
         
         server = lib.creator.create_server(launch_config, name, properties, McServer.serversPath)
+        
+        # insert server into database
+        db.add_server(
+            uuid=server.id,
+            name=name,
+            ip=launch_config.get("ip"),
+            port=launch_config.get("port"),
+            rcon_port=launch_config.get("rcon_port") or 25575,
+            path=server.PATH,
+            ram_max=launch_config.get("rMax"),
+            ram_min=launch_config.get("rMin"),
+            auto_start=launch_config.get("auto_start"),
+            other_args=launch_config.get("other_args"),
+            target_executable=launch_config.get("target_executable")
+        )
+        
+        
         if isinstance(server, McServer):
             servers[server.id] = server
             return jsonify({"status":"Server created", "server":server.json()}), 200
@@ -142,6 +189,10 @@ def edit(id):
         with open(path_file, "w") as editor:
             # content = content.replace("\n\n", "\n")
             editor.write(content)
+            # if changes the ip, update the db
+            if "ip" in content:
+                db.update_server(server.id, ip=content["ip"])
+        return jsonify({"status":"File edited successfully"}), 200
         
     elif request.method == 'GET':
         file = request.args.get('path')
