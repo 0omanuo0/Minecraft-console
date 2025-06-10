@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 
 
 
-export default function createNewServer() {
+export default function CreateNewServer() {
     const configOpts = require('@/data/server_properties_create.json');
     const [versions, setVersions] = useState<React.ReactElement[]>([]);
     // type is a object with all the errors of validation
