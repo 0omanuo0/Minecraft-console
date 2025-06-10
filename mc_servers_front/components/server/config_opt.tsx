@@ -19,8 +19,8 @@ export default function ConfigOpts({ default_values, }: Readonly<{ default_value
         switch (typeof config_options[key]) {
             case 'boolean':
                 return (
-                    <li key={key}>
-                        {name}
+                    <li key={key} className="flex justify-between items-center">
+                        <span>{name}</span>
                         <input type="checkbox" defaultChecked={default_values[key] as boolean} name={key} id={key}
                             className=" ml-2 items-end" onChange={(e) => {
                                 console.log(e.target.checked);
@@ -29,24 +29,24 @@ export default function ConfigOpts({ default_values, }: Readonly<{ default_value
                 )
             case 'number':
                 return (
-                    <li key={key}>
-                        {name}
+                    <li key={key} className="flex justify-between items-center">
+                        <span>{name}</span>
                         <input type="number" name={key} id={key} defaultValue={default_values[key] as number}
-                            className="border rounded bg-neutral-100 border-neutral-900 px-2 p-1 ml-2 items-end" />
+                            className="border-[2px] rounded bg-neutral-100 border-neutral-700/60 px-2 p-1 ml-2 items-end w-[200px]" />
                     </li>
                 )
             case 'string':
                 return (
-                    <li key={key}>
-                        {name}
+                    <li key={key} className="flex justify-between items-center">
+                        <span>{name}</span>
                         <input type="text" name={key} id={key} defaultValue={default_values[key] as string}
-                            className="bg-neutral-100 border border-neutral-900 rounded px-2 p-1 ml-2 items-end" />
+                            className="border-[2px] rounded bg-neutral-100 border-neutral-700/60 px-2 p-1 ml-2 items-end w-[200px]" />
                     </li>
                 )
             default:
                 return (
-                    <li key={key}>
-                        {name}
+                    <li key={key} className="flex justify-between items-center">
+                        <span>{name}</span>
                         <Options default_vaule={default_values[key] as string} ind={key} list={Object.values(config_options[key])}></Options>
                     </li>
                 )
@@ -71,7 +71,7 @@ function Options({ list, ind, default_vaule }: Readonly<{ list: string[][]; ind:
     });
     return (
         <select name={ind} id={ind} defaultValue={default_vaule}
-            className="bg-neutral-100 border border-neutral-900 rounded px-2 p-1 ml-2 items-end ">
+            className="bg-neutral-100 border-[2px] border-neutral-700/60 rounded px-2 p-1 ml-2 items-end w-[200px]">
             {opts}
         </select>
     )
