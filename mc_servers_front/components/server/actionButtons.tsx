@@ -23,7 +23,7 @@ export function ButtonStart({ id }: { id: string }) {
 export function ButtonStop({ id }: { id: string }) {
     return (
         <div className="flex items-center">
-            <form method="post" className="" action={
+            <form action={
                 () => {
                     stop(id);
                     // redirect(`/server/${id}`);
@@ -33,7 +33,7 @@ export function ButtonStop({ id }: { id: string }) {
                     <i className="bi bi-arrow-counterclockwise text-3xl hover:text-neutral-300 transition-all duration-200 "></i>
                 </button>
             </form>
-            <form method="post" className="" action={
+            <form action={
                 () => {
                     stop(id);
                     // redirect(`/server/${id}`);
