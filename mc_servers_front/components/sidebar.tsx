@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 
 import type { McServerList } from "@/lib/types";
@@ -12,15 +12,15 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const serversListSkeleton = [
-    <li className="animate-pulse hover:border-l-2 transition-all pl-8 text-gray-500 hover:opacity-80 duration-100 items-center">
+    <li key={1} className="animate-pulse hover:border-l-2 transition-all pl-8 text-gray-500 hover:opacity-80 duration-100 items-center">
         <i className="bi bi-circle-fill text-xs mr-2  "></i>
         <span className="bg-gray-500 w-1/2 h-2 px-20 rounded-full"></span>
     </li>,
-    <li className="animate-pulse hover:border-l-2 transition-all pl-8 text-gray-500 hover:opacity-80 duration-100 items-center">
+    <li key={2} className="animate-pulse hover:border-l-2 transition-all pl-8 text-gray-500 hover:opacity-80 duration-100 items-center">
         <i className="bi bi-circle-fill text-xs mr-2  "></i>
         <span className="bg-gray-500 w-1/2 h-2 px-20 rounded-full"></span>
     </li>,
-    <li className="animate-pulse hover:border-l-2 transition-all pl-8 text-gray-500 hover:opacity-80 duration-100 items-center">
+    <li key={3} className="animate-pulse hover:border-l-2 transition-all pl-8 text-gray-500 hover:opacity-80 duration-100 items-center">
         <i className="bi bi-circle-fill text-xs mr-2  "></i>
         <span className="bg-gray-500 w-1/2 h-2 px-20 rounded-full"></span>
     </li>
@@ -44,13 +44,33 @@ export default function Sidebar() {
     useEffect(() => {
         const serversList = async () => {
             const response = await fetch("/api/servers");
+            if (!response.ok) {
+                console.log("Error fetching server list:", response.statusText);
+                toast.error(
+                    <div>
+                        <strong>Error fetching server list.</strong>
+                        <div className="text-xs mt-1 text-gray-400">{response.statusText}</div>
+                    </div>
+
+                    , {
+                        toastId: "error-fetching-server-list",
+                    }
+                );
+                return;
+            }
+
             const data: McServerList | undefined = await response.json();
             // wait 3s
             // await new Promise(resolve => setTimeout(resolve, 5000));
             if (!data) redirect("/dashboard");
-            console.log(data, serverListOld)
             if (data.length !== serverListOld.length) {
-                toast("Server list updated");
+                try {
+                    toast("Server list updated");
+                }
+                catch (e) {
+                    console.error("Error showing toast:", e);
+                }
+
                 serverListOld = data;
             }
             setServersList(
@@ -83,7 +103,7 @@ export default function Sidebar() {
 
     return (
         <>
-            
+
             <div className="sidebar fixed top-0 bottom-0 lg:left-0 p-2 px-4 w-[16rem] overflow-y-auto text-center bg-[#233333] h-[100vh]">
                 <div className="text-gray-100 text-xl">
                     <div className="p-2.5 mt-1 flex items-center">
@@ -105,9 +125,13 @@ export default function Sidebar() {
                     <i className="bi bi-hdd-network"></i>
                     <span className="text-[15px] ml-4 text-gray-200 font-bold text-lg">Servers</span>
                 </div>
-                <div id="servers_list" className={showList ? "block" : "hidden" + " text-left mx-4 mt-4"}>
-                    <ul className=" space-y-2 font-litght text-left" >
-                        <li key={"add"} className="hover:border-l-2 pl-8 text-white hover:opacity-80 transition-all duration-100 mt-2">
+                <div
+                    id="servers_list"
+                    className={`transition-all duration-500 overflow-hidden text-left mx-4 mt-4 ${showList ? "max-h-0" : "max-h-96"
+                        }`}
+                >
+                    <ul className="space-y-2 font-light text-left overflow-hidden">
+                        <li key={"add"} className="hover:border-l-2 pl-8 text-white hover:opacity-80 transition-all duration-100">
                             <a href="/create"><i className="bi bi-cloud-plus mr-2 "></i>Create server</a>
                         </li>
                         {serversList}
