@@ -1,12 +1,13 @@
 from mctools import RCONClient
 from lib.tools import get_process_info
 import os
+from typing import Union, List, Dict
 
 class McServer ():
     LIMIT_LINES = 500
     host:str = None
     serversPath:str = None
-    def __init__(self, name:str, id:str, host:str=None, path:str=None) -> None:
+    def __init__(self, name:str, id:str, host:str=None, path:str=None, not_alive=False) -> None:
         self.name = name
         self.id = id
         self.PATH = path if path is not None else ''
@@ -19,7 +20,8 @@ class McServer ():
         self.is_server_on = False
 
         self.content : list[str] = []
-        self.check_alive()
+        if(not_alive):
+            self.check_alive()
 
     def update_properties(self, updated:'dict'):
         #get key and value
@@ -62,7 +64,7 @@ class McServer ():
         self.get_properties()
                 
     def check_alive(self) -> bool:
-        if self.rcon_password is None:
+        if not self.rcon_password or not isinstance(self.rcon_password, (str, bytes, bytearray)):
             return False
         if not self.is_server_on:
             try:
@@ -139,30 +141,54 @@ class McServer ():
             resp = self.rcon.command(command)
             return resp 
     
-    def send_content(self, other_content:str|list=None):
-        if not os.path.exists(f'{self.PATH}/logs/latest.log'):
+
+
+    def send_content(self, other_content: Union[str, List[str]] = None) -> Dict[str, List[str]]:
+        # build path
+        log_file = os.path.join(self.PATH, 'logs', 'latest.log')
+        # make sure we have a content buffer
+        if not hasattr(self, 'content') or self.content is None:
+            self.content = []
+        # if no log yet, nothing to send
+        if not os.path.exists(log_file):
             return {'data': []}
-        if type(other_content) == str:
-            other_content = [other_content]
-            
-        f = open('{}/logs/latest.log'.format(self.PATH))
-        newContent = f.read()
-        
-        if newContent != '':
-            newContent = newContent.split('\n')[(-1*self.LIMIT_LINES):]
+
+        # read *all* existing lines
+        with open(log_file, 'r') as f:
+            lines = f.read().splitlines()
+
+        # figure out what's new since last time
+        if self.content:
+            last = self.content[-1]
             try:
-                indexNewContent = newContent.index(self.content[-1]) if len(self.content) > 0 else 0
-            except:
-                indexNewContent = -1
-            if other_content != None:
-                self.content += other_content
-                f.close()
-                f = open('{}/logs/latest.log'.format(self.PATH), 'w')
-                f.write('\n'.join(self.content))
-                f.close()
-            if indexNewContent != -1:
-                self.content += newContent[indexNewContent:]
-            return {'data': self.content}
+                idx = lines.index(last)
+                new_lines = lines[idx+1:]
+            except ValueError:
+                # if we can’t find the old last line, treat everything as new
+                new_lines = lines
+        else:
+            new_lines = lines
+
+        # if caller wants to append something, normalize and add it
+        if other_content is not None:
+            if isinstance(other_content, str):
+                other_content = [other_content]
+            self.content.extend(other_content)
+            lines.extend(other_content)
+
+        # now trim to only the last LIMIT_LINES both in memory and on disk
+        trimmed = lines[-self.LIMIT_LINES:]
+        with open(log_file, 'w') as f:
+            f.write('\n'.join(trimmed))
+
+        # update our in-memory buffer with the newly read lines
+        if new_lines:
+            self.content.extend(new_lines)
+        # finally trim in-memory buffer as well
+        self.content = self.content[-self.LIMIT_LINES:]
+
+        return {'data': self.content}
+
         
     def json(self):
         return {

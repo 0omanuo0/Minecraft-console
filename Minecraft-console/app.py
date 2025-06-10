@@ -37,9 +37,9 @@ for server_data in db.get_servers():
 
 servers_process : dict[str, subprocess.Popen] = {}
 
-def notFound():
-    data = {"status":"NotFound"}
-    return jsonify(data)
+def notFound(e : Exception = None):
+    data = {"status":"NotFound", "error": str(e)}
+    return jsonify(data), 404
 
 
 @app.route('/servers')
@@ -57,6 +57,17 @@ def stop(id):
         return notFound()
     
     server : McServer = servers[id]
+
+    if not servers_process.get(id) and server.is_server_on:
+        # send sigkill (9) to the process
+        try:
+            print("Stopping server with id: ", id, server.status_server)###############################
+            os.kill(server.status_server.get("PID"), 9)
+            return jsonify({"status":"Server stopped"}), 200
+        except Exception as e:
+            print("Error stopping server: ", e)
+            return jsonify({"status":"Error", "message":str(e)}), 500
+
     server.send_rcon_command("stop")
     
     return redirect('/server/' + id)
@@ -203,12 +214,18 @@ def edit(id):
             file_content = "".join(file_content)
         content = {"content":file_content}
         return jsonify(content)
-    return "OK"
+    return {"status":"Method not allowed"}, 405
 
 @app.route('/server/<id>/download')
 def download(id):
     server : McServer = servers[id]
     file : str = request.args.get('f')
+    # define absolute path to the file joining the working directory and the file path
+    working_dir = os.getcwd()
+    file = os.path.join(working_dir, file)
+    # check if the file exists
+    if not os.path.exists(file):
+        return notFound()
 
     if Path(file).is_dir():
         #create tmp zip in /tmp and delete after
@@ -255,8 +272,9 @@ def handle_send_command(data):
     serverid : str = data["serverid"]
     server = servers[serverid]
     print("Command: " + command)
-    if server.is_server_on:
-        commandResp = server.send_rcon_command(command).replace("[0m", "")
+    if server.check_alive():
+        commandResp = server.send_rcon_command(command)
+        print("Command response: ", commandResp)
         if command != '':
             emit('recv', server.send_content(other_content=[command, commandResp]))
 

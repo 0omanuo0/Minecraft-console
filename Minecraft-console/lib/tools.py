@@ -43,7 +43,7 @@ def get_process_info(puerto):
     def get_cmd(pid):
         try:
             process = psutil.Process(pid)
-            return process.cmdline()
+            return " ".join(process.cmdline())
         except psutil.NoSuchProcess:
             return None
     for proceso in psutil.process_iter(['pid', 'name', 'memory_info', 'cpu_percent']):
