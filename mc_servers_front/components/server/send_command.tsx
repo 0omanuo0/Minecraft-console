@@ -7,13 +7,13 @@ import type { Socket } from 'socket.io-client';
 
 
 
-export default function InputCommand({ id, socket }: Readonly<{ id: string; socket:Socket }>) {
+export default function InputCommand({ id, socket }: Readonly<{ id: string; socket: Socket }>) {
 
     const sendCommand = () => {
         const input = document.getElementById("content") as HTMLInputElement;
         const command = {
             command: input.value,
-            serverid:id
+            serverid: id
         };
 
         // send with socketio the vaule
@@ -25,11 +25,17 @@ export default function InputCommand({ id, socket }: Readonly<{ id: string; sock
 
 
     return (
-        <form id="command-form" className="mb-4" action={sendCommand} >
+        <form id="command-form" className="mb-4 flex items-center" action={sendCommand} >
             <input type="text" id="content" name="content" autoComplete="off"
                 className="w-full relative bg-gray-50 ring-0 outline-none border border-[#233333] text-neutral-900 placeholder-[#233333] text-sm rounded-lg focus:ring-[#466666]   focus:border-[#466666]  block p-2.5 checked:bg-emerald-500"
                 placeholder="Command...">
             </input>
+            <button
+                type="submit"
+                className="ml-2 bg-[#6cabad] hover:bg-[#0E8388] duration-300 transition-colors px-4 rounded-lg h-fit py-2 text-red-50 shadow-lg text-sm tracking-widest"
+            >
+                Send
+            </button>
         </form>
     );
 }

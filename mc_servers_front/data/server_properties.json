@@ -5,7 +5,8 @@
         "easy": [
             "easy",
             "normal",
-            "hard"
+            "hard",
+            "peaceful"
         ]
     },
     "enable-command-block": false,
@@ -13,7 +14,8 @@
         "survival": [
             "survival",
             "creative",
-            "adventure"
+            "adventure",
+            "spectator"
         ]
     },
     "generate-structures": true,
