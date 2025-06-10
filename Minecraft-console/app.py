@@ -230,8 +230,182 @@ def download(id):
     if Path(file).is_dir():
         #create tmp zip in /tmp and delete after
         shutil.make_archive("/tmp/tmp", 'zip', file)
-        return send_file("/tmp/tmp.zip", as_attachment=True)
-    return send_file(file, as_attachment=True)
+        return send_file("/tmp/tmp.zip", as_attachment=True, download_name=f"{Path(file).name}.zip")
+    try:
+        return send_file(file, as_attachment=True)
+    except Exception as e:
+        print("Error sending file: ", e)
+        return notFound()
+    
+@app.route('/server/<id>/file/delete', methods=['DELETE']) # delete file
+def delete(id):
+    server : McServer = servers[id]
+    if not id in servers:
+        return notFound()
+    
+    file_path = request.args.get('f')
+    if not file_path:
+        return jsonify({"status":"Error", "message":"No file path provided"}), 400
+    
+    # check if the file is in the server path
+    if not server.PATH in file_path:
+        return notFound()
+    
+    try:
+        print("Deleting file: ", file_path)###############################
+        if os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+        else:
+            try:
+                os.remove(file_path)
+            except Exception as e:
+                print("Error deleting file: ", e)
+                return jsonify({"status":"Error", "message":str(e)}), 500
+        return jsonify({"status":"File deleted successfully"}), 200
+    except Exception as e:
+        print("Error deleting file: ", e)
+        return jsonify({"status":"Error", "message":str(e)}), 500
+    
+@app.route('/server/<id>/file/rename', methods=['POST'])
+def rename(id):
+    server : McServer = servers[id]
+    if not id in servers:
+        return notFound()
+    
+    file_path = request.args.get('f')
+    print(request.json.get('newName'), file_path)
+    new_name = request.json.get('newName')
+    
+    if not file_path or not new_name:
+        return jsonify({"status":"Error", "message":"No file path or new name provided"}), 400
+    
+    # check if the file is in the server path
+    if not server.PATH in file_path:
+        return notFound()
+    
+    try:
+        new_file_path = os.path.join(os.path.dirname(file_path), new_name)
+        print("Renaming file from", file_path, "to", new_file_path)###############################
+        if os.path.isdir(file_path):
+            shutil.move(file_path, new_file_path)
+        else:
+            try:
+                os.rename(file_path, new_file_path)
+            except Exception as e:
+                print("Error renaming file: ", e)
+                return jsonify({"status":"Error", "message":str(e)}), 500
+        return jsonify({"status":"File renamed successfully"}), 200
+    except Exception as e:
+        print("Error renaming file: ", e)
+        return jsonify({"status":"Error", "message":str(e)}), 500
+    
+@app.route('/server/<id>/file/unzip', methods=['POST'])
+def unzip(id):
+    server : McServer = servers[id]
+    if not id in servers:
+        return notFound()
+    
+    file_path = request.args.get('f')
+    if not file_path:
+        return jsonify({"status":"Error", "message":"No file path provided"}), 400
+    
+    # check if the file is in the server path
+    if not server.PATH in file_path:
+        return notFound()
+    
+    try:
+        print("Unzipping file: ", file_path)###############################
+        shutil.unpack_archive(file_path, os.path.dirname(file_path))
+        return jsonify({"status":"File unzipped successfully"}), 200
+    except Exception as e:
+        print("Error unzipping file: ", e)
+        return jsonify({"status":"Error", "message":str(e)}), 500
+
+
+@app.route('/server/<id>/file/<endpoint>', methods=['POST'])
+def file_endpoint(id, endpoint):
+    server : McServer = servers[id]
+    print("Endpoint: ", endpoint)
+    
+    if not id in servers:
+        return notFound()
+    
+    if endpoint == "upload":
+        # handle file upload
+        if 'file' not in request.files:
+            return jsonify({"status":"Error", "message":"No file part"}), 400
+        
+        file_path = request.args.get('f')
+        if not file_path:
+            return jsonify({"status":"Error", "message":"No file path provided"}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"status":"Error", "message":"No selected file"}), 400
+        
+        # save the file to the server path
+        file_path = os.path.join(file_path, file.filename)
+        
+        if os.path.exists(file_path):
+            return jsonify({"status":"Error", "message":"File already exists"}), 400
+        try:
+            file.save(file_path)
+        except Exception as e:
+            print("Error creating file: ", e)
+            return jsonify({"status":"Error", "message":str(e)}), 500
+        print("Saving file to: ", file_path)###############################
+        return jsonify({"status":"File uploaded successfully", "file":file.filename}), 200
+    
+    elif endpoint == "newFolder":
+        file_path = request.args.get('f')
+        folder_name = request.json.get("formData").get('newName')
+        if not file_path:
+            return jsonify({"status":"Error", "message":"No file path provided"}), 400
+        if not os.path.exists(file_path):
+            return jsonify({"status":"Error", "message":"File path does not exist"}), 400
+        if not request.json or 'formData' not in request.json:
+            return jsonify({"status":"Error", "message":"No form data provided"}), 400
+        
+        print(request.json)
+        if not folder_name:
+            return jsonify({"status":"Error", "message":"No folder name provided"}), 400
+        
+        folder_path = os.path.join(file_path, folder_name)
+        try:
+            os.makedirs(folder_path, exist_ok=True)
+        except Exception as e:
+            print("Error creating folder: ", e)
+            return jsonify({"status":"Error", "message":str(e)}), 500
+        print("Creating folder: ", folder_path, "at: ", file_path)###############################
+        return jsonify({"status":"Folder created successfully", "folder":folder_name}), 200
+    
+    elif endpoint == "newFile":
+        file_path = request.args.get('f')
+        file_name = request.json.get("formData").get('newName')
+        if not file_name:
+            return jsonify({"status":"Error", "message":"No file name provided"}), 400
+        
+        if not file_path:
+            return jsonify({"status":"Error", "message":"No file path provided"}), 400
+        if not os.path.exists(file_path):
+            return jsonify({"status":"Error", "message":"File path does not exist"}), 400
+        if not request.json or 'formData' not in request.json:
+            return jsonify({"status":"Error", "message":"No form data provided"}), 400
+        
+        new_file_path = os.path.join(file_path, file_name)
+        if os.path.exists(new_file_path):
+            return jsonify({"status":"Error", "message":"File already exists"}), 400
+        try:
+            open(new_file_path, 'w').close()  # Create an empty file
+        except Exception as e:
+            print("Error creating file: ", e)
+            return jsonify({"status":"Error", "message":str(e)}), 500
+        print("Creating file: ", new_file_path, "at: ", file_path)
+        return jsonify({"status":"File created successfully", "file":file_name}), 200
+    
+    else:
+        return notFound()
+
 
 
 @app.route('/server/<id>/config', methods=['GET', 'POST'])
